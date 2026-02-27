@@ -255,13 +255,23 @@ You can replicate this with your own playlists by pointing `PLAYLIST_URL` to a d
 
 ---
 
-## Screenshots
+## Screenshots & demo
 
-Graph view in Obsidian for a 51‑video playlist (index note in the center, each episode and artifact as a node):
+### Obsidian navigation demo (GIF)
 
-![Obsidian graph view example](examples/greek-business-playlist/images/graph.png)
+Short walkthrough of the example playlist vault – opening the index, jumping into individual episode notes, and exploring the graph:
 
-To keep the repo lightweight, only this PNG screenshot is included. Your own vault and notes stay local.
+![Obsidian demo](examples/greek-business-playlist/obsidian-demo.gif)
+
+### Graph views
+
+- **High‑level graph (all notes + artifacts)**  
+  ![Obsidian graph view example](examples/greek-business-playlist/images/graph.png)
+
+- **Zoomed‑in example graph**  
+  ![Obsidian example graph](examples/greek-business-playlist/example-obsidian-graph.png)
+
+Your own vault and notes stay local; these visuals come from the documented example playlist.
 
 ---
 

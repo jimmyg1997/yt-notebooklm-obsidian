@@ -12,6 +12,15 @@ As an individual investor who follows Greek finance content, this is also a way 
 - **URL** (example):  
   `https://www.youtube.com/watch?v=383CnQdrGsM&list=PLAQ71P0f2W3nJq8WD_Y9kRHZrHwg5c9tB`
 
+### Visuals
+
+- **Graph screenshot:** `images/graph.png` (Obsidian graph view of the playlist notes).
+- **Short demo GIF:** `obsidian-demo.gif` — shows navigating the index, video notes, and graph.
+
+#### Demo (GIF)
+
+![Obsidian demo](obsidian-demo.gif)
+
 In `.env`:
 
 ```env
