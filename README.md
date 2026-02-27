@@ -2,7 +2,7 @@
 
 Turn any YouTube playlist into **searchable, linked notes** with summaries, key ideas, and NotebookLM artifacts – ready for Obsidian or any Markdown editor.
 
-This project started from a real use case: a 51‑video Greek business podcast playlist. The pipeline:
+This project started from a real use case: a 51‑video Greek business podcast playlist. As a Greek investor and long‑time follower of local finance creators, this repo is also a small “thank you” to **Chris Tsounis** and the wider Greek financial community for sharing so much practical knowledge. The pipeline:
 
 - downloaded and cleaned all available subtitles,
 - enriched each episode with `gpt-4o-mini`,
@@ -51,6 +51,7 @@ You can reuse the same pipeline for **any playlist**.
 
 ```bash
 git clone https://github.com/jimmyg1997/yt-notebooklm-obsidian.git
+cd yt-notebooklm-obsidian
 cd youtube-lm
 pip install -r requirements.txt
 playwright install chromium   # used by notebooklm-py for login
@@ -251,6 +252,16 @@ See **`examples/greek-business-playlist/README.md`** for a concrete run:
   - `podcast.mp3`, `mindmap.json`, `quiz.json`, `flashcards.json` downloaded and linked from Obsidian.
 
 You can replicate this with your own playlists by pointing `PLAYLIST_URL` to a different playlist and running `./run_pipeline.sh`.
+
+---
+
+## Screenshots
+
+Graph view in Obsidian for a 51‑video playlist (index note in the center, each episode and artifact as a node):
+
+![Obsidian graph view example](examples/greek-business-playlist/images/graph.png)
+
+To keep the repo lightweight, only this PNG screenshot is included. Your own vault and notes stay local.
 
 ---
 
