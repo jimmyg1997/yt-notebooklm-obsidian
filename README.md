@@ -39,10 +39,10 @@ Your own vault and notes stay local; these visuals come from the documented exam
 
 [![Ολ Ιν / Greek finance playlist thumbnail](https://i.ytimg.com/vi/383CnQdrGsM/hqdefault.jpg)](https://www.youtube.com/watch?v=383CnQdrGsM&list=PLAQ71P0f2W3nJq8WD_Y9kRHZrHwg5c9tB)
 
-Special thanks to **Chris Tsounis** and the wider Greek finance / business community for sharing so much practical knowledge — this repo is one way to turn that content into a living knowledge graph. 💚  
+Special thanks to **Christos (Chris) Tsounis** and **Spyros Andrianos**, along with the wider Greek finance / business community, for sharing so much practical knowledge — this repo is one way to turn that content into a living knowledge graph. 💚  
 
-- Personal site: [`christsounis.com`](https://christsounis.com/)  
-- LinkedIn (Greek investing / business posts): search for **“Christos Tsounis”** on LinkedIn to find his profile and posts.
+- **Christos Tsounis** – YouTube: [`Chris Tsounis`](https://www.youtube.com/channel/UCthUKUdCLSe0P-wyVLE9XeQ) · Site: [`christsounis.com`](https://christsounis.com/)  
+- **Spyros Andrianos** – Site / bio: [`Men Of Style – Spyros Andrianos`](https://menofstyle.gr/spyros-andrianos-biografiko/)
 
 ---
 
