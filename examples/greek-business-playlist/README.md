@@ -1,7 +1,7 @@
-# Example: Greek business playlist (51 videos)
+# Example: Greek business playlist (51 videos) 💼🇬🇷
 
 This example documents a real run of the pipeline on a public Greek business podcast playlist.  
-As an individual investor who follows Greek finance content, this is also a way to say thank you to **Chris Tsounis** and the broader Greek financial community for the depth and generosity of their material – the resulting Obsidian graph is a snapshot of that knowledge in one place.
+As an individual investor who follows Greek finance content, this is also a way to say thank you to **Chris Tsounis** and the broader Greek financial community for the depth and generosity of their material – the resulting Obsidian graph is a snapshot of that knowledge in one place. 🙏
 
 ---
 

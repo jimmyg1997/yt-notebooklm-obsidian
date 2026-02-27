@@ -1,4 +1,4 @@
-# YouTube → AI → NotebookLM → Obsidian
+# YouTube → AI → NotebookLM → Obsidian 📺✨
 
 Turn any YouTube playlist into **searchable, linked notes** with summaries, key ideas, and NotebookLM artifacts – ready for Obsidian or any Markdown editor.
 
@@ -8,9 +8,9 @@ You can reuse the same pipeline for **any playlist** – but to make it concrete
 
 ---
 
-## Example: 51‑video Greek business playlist
+## Example: 51‑video Greek business playlist 💼🇬🇷
 
-- **Playlist**: Ολ Ιν (business / career podcast)  
+- **Playlist**: Ολ Ιν (business / career podcast) – part of the Greek finance / business creator ecosystem  
 - **Videos**: 51 (50 with usable subtitles)  
 - **Approx. cost**: ~**$0.13** for enrichment with `gpt-4o-mini`  
 - **Output**:
@@ -19,7 +19,7 @@ You can reuse the same pipeline for **any playlist** – but to make it concrete
   - NotebookLM notebook with all 50 sources
   - `podcast.mp3`, `mindmap.json`, `quiz.json`, `flashcards.json` downloaded and linked from Obsidian
 
-### Obsidian navigation demo (GIF)
+### Obsidian navigation demo (GIF) 🧭
 
 Short walkthrough of the example playlist vault – opening the index, jumping into individual episode notes, and exploring the graph:
 
@@ -27,17 +27,23 @@ Short walkthrough of the example playlist vault – opening the index, jumping i
 
 ### Graph views
 
-- **High‑level graph (all notes + artifacts)**  
+- **High‑level graph (all notes + artifacts)** 🌐  
   ![Obsidian graph view example](examples/greek-business-playlist/images/graph.png)
 
-- **Zoomed‑in example graph**  
+- **Zoomed‑in example graph** 🔍  
   ![Obsidian example graph](examples/greek-business-playlist/example-obsidian-graph.png)
 
 Your own vault and notes stay local; these visuals come from the documented example playlist.
 
+### Inspired by Greek financial creators
+
+[![Ολ Ιν / Greek finance playlist thumbnail](https://i.ytimg.com/vi/383CnQdrGsM/hqdefault.jpg)](https://www.youtube.com/watch?v=383CnQdrGsM&list=PLAQ71P0f2W3nJq8WD_Y9kRHZrHwg5c9tB)
+
+Special thanks to **Chris Tsounis** and the wider Greek finance / business community for sharing so much practical knowledge — this repo is one way to turn that content into a living knowledge graph. 💚
+
 ---
 
-## Features
+## Features 🚀
 
 - **End‑to‑end automation**
   - `YouTube playlist → transcripts → LLM enrichment → NotebookLM artifacts → Obsidian notes`
@@ -58,7 +64,13 @@ Your own vault and notes stay local; these visuals come from the documented exam
 
 ---
 
-## Requirements
+## Who is this for? 👇
+
+- **Solo learners & investors** who want to turn long playlists (business, tech, finance, anything) into a personal “mini‑MBA” knowledge base.
+- **Creators & educators** who publish playlists and want to ship Obsidian‑ready notes + NotebookLM artifacts for their audience.
+- **Knowledge workers / teams** who onboard via YouTube courses and want linked notes, quizzes, and audio overviews instead of raw videos.
+
+## Requirements 🧱
 
 - **Python 3.10+**
 - **YouTube playlist URL** (must include `list=...`)
@@ -68,7 +80,7 @@ Your own vault and notes stay local; these visuals come from the documented exam
 
 ---
 
-## Quick start
+## Quick start ⚡
 
 ### 1. Clone and install
 
@@ -192,7 +204,7 @@ python pipeline.py --only enrichment --resume
 
 ---
 
-## NotebookLM integration
+## NotebookLM integration 🎧🧠
 
 - On the **first** NotebookLM run, the pipeline:
   - logs in via your existing `notebooklm-py` browser session,
@@ -214,7 +226,7 @@ To force a **new** notebook:
 
 ---
 
-## Output layout
+## Output layout 🗂️
 
 **In your vault (or `data/obsidian_export/`):**
 
@@ -248,7 +260,7 @@ For how to use all of this **inside Obsidian** (graph view, NotebookLM artifacts
 
 ---
 
-## Enrichment backends: OpenAI vs Gemini
+## Enrichment backends: OpenAI vs Gemini 🤖
 
 | | OpenAI (default) | Gemini |
 |--|------------------|--------|
@@ -261,7 +273,7 @@ See `docs/COST_51_VIDEOS.md` for the cost breakdown we measured on a 51‑video 
 
 ---
 
-## Run a single step
+## Run a single step 🧪
 
 ```bash
 python pipeline.py --only transcripts
