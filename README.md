@@ -2,15 +2,38 @@
 
 Turn any YouTube playlist into **searchable, linked notes** with summaries, key ideas, and NotebookLM artifacts – ready for Obsidian or any Markdown editor.
 
-This project started from a real use case: a 51‑video Greek business podcast playlist. As a Greek investor and long‑time follower of local finance creators, this repo is also a small “thank you” to **Chris Tsounis** and the wider Greek financial community for sharing so much practical knowledge. The pipeline:
+This project started from a real use case: a 51‑video Greek business podcast playlist. As a Greek investor and long‑time follower of local finance creators, this repo is also a small “thank you” to **Chris Tsounis** and the wider Greek financial community for sharing so much practical knowledge.
 
-- downloaded and cleaned all available subtitles,
-- enriched each episode with `gpt-4o-mini`,
-- created a NotebookLM notebook with all 50 usable videos,
-- generated a podcast‑style audio overview, mind map, quiz, and flashcards,
-- and wrote 50 rich Markdown notes + an index into an Obsidian vault.
+You can reuse the same pipeline for **any playlist** – but to make it concrete, here’s the real example it was built on.
 
-You can reuse the same pipeline for **any playlist**.
+---
+
+## Example: 51‑video Greek business playlist
+
+- **Playlist**: Ολ Ιν (business / career podcast)  
+- **Videos**: 51 (50 with usable subtitles)  
+- **Approx. cost**: ~**$0.13** for enrichment with `gpt-4o-mini`  
+- **Output**:
+  - 50 enriched JSON files in `data/enriched/`
+  - 50 Markdown notes + index in your vault
+  - NotebookLM notebook with all 50 sources
+  - `podcast.mp3`, `mindmap.json`, `quiz.json`, `flashcards.json` downloaded and linked from Obsidian
+
+### Obsidian navigation demo (GIF)
+
+Short walkthrough of the example playlist vault – opening the index, jumping into individual episode notes, and exploring the graph:
+
+![Obsidian demo](examples/greek-business-playlist/obsidian-demo.gif)
+
+### Graph views
+
+- **High‑level graph (all notes + artifacts)**  
+  ![Obsidian graph view example](examples/greek-business-playlist/images/graph.png)
+
+- **Zoomed‑in example graph**  
+  ![Obsidian example graph](examples/greek-business-playlist/example-obsidian-graph.png)
+
+Your own vault and notes stay local; these visuals come from the documented example playlist.
 
 ---
 
@@ -235,43 +258,6 @@ For how to use all of this **inside Obsidian** (graph view, NotebookLM artifacts
 
 Set `OPENAI_API_KEY` in `.env` to use OpenAI; leave it unset and set `GEMINI_API_KEY` to use Gemini.  
 See `docs/COST_51_VIDEOS.md` for the cost breakdown we measured on a 51‑video playlist.
-
----
-
-## Example: 51‑video Greek business playlist
-
-See **`examples/greek-business-playlist/README.md`** for a concrete run:
-
-- 51 playlist videos, 50 with subtitles.
-- ~2.65M characters of transcript, ~687k input tokens.
-- Enrichment via `gpt-4o-mini` cost ≈ **$0.13**.
-- Output:
-  - 50 enriched JSON files in `data/enriched/`.
-  - 50 Markdown notes + index in your vault.
-  - NotebookLM notebook with all 50 sources.
-  - `podcast.mp3`, `mindmap.json`, `quiz.json`, `flashcards.json` downloaded and linked from Obsidian.
-
-You can replicate this with your own playlists by pointing `PLAYLIST_URL` to a different playlist and running `./run_pipeline.sh`.
-
----
-
-## Screenshots & demo
-
-### Obsidian navigation demo (GIF)
-
-Short walkthrough of the example playlist vault – opening the index, jumping into individual episode notes, and exploring the graph:
-
-![Obsidian demo](examples/greek-business-playlist/obsidian-demo.gif)
-
-### Graph views
-
-- **High‑level graph (all notes + artifacts)**  
-  ![Obsidian graph view example](examples/greek-business-playlist/images/graph.png)
-
-- **Zoomed‑in example graph**  
-  ![Obsidian example graph](examples/greek-business-playlist/example-obsidian-graph.png)
-
-Your own vault and notes stay local; these visuals come from the documented example playlist.
 
 ---
 
