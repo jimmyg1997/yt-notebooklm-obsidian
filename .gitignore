@@ -21,5 +21,10 @@ venv/
 .idea/
 .vscode/
 
+# Large/local media (keep out of repo)
+*.mov
+
 # NotebookLM session (optional; often kept local)
 # .notebooklm/
+examples/greek-business-playlist/obsidian-demo.gif
+examples/greek-business-playlist/example-obsidian-screencast.mov
