@@ -21,6 +21,9 @@ venv/
 .idea/
 .vscode/
 
+# Local vault artifacts accidentally committed once
+OBSIDIAN_VAULT_PATH=*/
+
 # Large/local media (keep out of repo)
 *.mov
 
