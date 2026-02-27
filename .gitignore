@@ -4,6 +4,11 @@ data/
 # Secrets and local config
 .env
 
+# Local meta docs (for Cursor only, not needed by users)
+AGENTS.md
+PROMPT.md
+SKILLS.md
+
 # Python
 __pycache__/
 *.py[cod]
