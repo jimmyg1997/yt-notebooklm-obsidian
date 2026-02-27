@@ -1,0 +1,20 @@
+# Generated at runtime
+data/
+
+# Secrets and local config
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# OS / editor junk
+.DS_Store
+.idea/
+.vscode/
+
+# NotebookLM session (optional; often kept local)
+# .notebooklm/

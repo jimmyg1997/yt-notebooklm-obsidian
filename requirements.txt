@@ -1,0 +1,7 @@
+yt-dlp>=2024.1.0
+python-dotenv>=1.0.0
+google-genai>=1.0.0
+openai>=1.0.0
+notebooklm-py[browser]>=0.3.0
+rich>=13.0.0
+playwright>=1.40.0
