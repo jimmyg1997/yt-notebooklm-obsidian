@@ -2,11 +2,13 @@
 
 This guide explains what lands in your vault and how to use it day to day.
 
+**Also see:** [Vault Dashboard walkthrough](USER_WALKTHROUGH.md) for the local web UI (browse, graph, single-video ingest).
+
 ---
 
 ## What you have after the pipeline
 
-- **One note per video** — Summary, key ideas, takeaways, quotes, and `[[wikilinks]]` from the AI.
+- **One note per video** — Summary, key ideas, takeaways, quotes, and `[[wikilinks]]` from transcript enrichment.
 - **00 - Index.md** — A single entry point: links to every video note and to the NotebookLM artifacts.
 - **notebooklm/** folder — Podcast (MP3), mind map (JSON + readable outline), quiz and flashcards (JSON).
 
@@ -21,7 +23,7 @@ The **mind map** is **not** Obsidian’s built-in graph. Obsidian’s graph show
 ### 1. Open the vault
 
 - If you set `OBSIDIAN_VAULT_PATH` in `.env`, open that folder in Obsidian: **File → Open folder as vault**.
-- If you didn’t, notes are in `./data/obsidian_export/YouTube Playlists/`. Open **that** folder as a vault if you want to use Obsidian.
+- If you didn’t, notes are in `./data/<experiment-name>/vault/`. Open **that** folder as a vault if you want to use Obsidian.
 
 ### 2. Start from the index
 

@@ -1,11 +1,14 @@
 /** Obsidian-style local graph — scoped modes for performance. */
-const VaultGraph = {
+/** @global — exposed on window for explorer.js and E2E tests */
+window.VaultGraph = {
   network: null,
   _nodes: null,
   _edges: null,
   _loadedKey: null,
+  _physicsOn: false,
   scope: "overview",
   focus: "",
+  activeTab: "note",
 
   destroy() {
     if (VaultGraph.network) {
@@ -20,6 +23,41 @@ const VaultGraph = {
   setScope(scope, focus = "") {
     VaultGraph.scope = scope || "overview";
     VaultGraph.focus = focus || "";
+  },
+
+  _visLib() {
+    if (typeof vis !== "undefined" && vis.Network && vis.DataSet) return vis;
+    if (typeof window !== "undefined" && window.vis?.Network) return window.vis;
+    return null;
+  },
+
+  switchTab(tabName) {
+    const tab = tabName === "graph" ? "graph" : "note";
+    VaultGraph.activeTab = tab;
+    document.querySelectorAll(".pane-tab").forEach((el) => {
+      el.classList.toggle("active", el.dataset.tab === tab);
+    });
+    const notePanel = document.getElementById("note-panel");
+    const graphPanel = document.getElementById("graph-panel");
+    if (notePanel) {
+      notePanel.hidden = tab === "graph";
+      notePanel.classList.toggle("is-active", tab === "note");
+    }
+    if (graphPanel) {
+      graphPanel.hidden = tab !== "graph";
+      graphPanel.classList.toggle("is-active", tab === "graph");
+    }
+    const titleBar = document.getElementById("note-title-bar");
+    if (titleBar) titleBar.hidden = tab === "graph";
+    if (tab === "graph" && window.vaultId) {
+      VaultGraph._scheduleLoad(window.vaultId);
+    }
+  },
+
+  _scheduleLoad(vaultId) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => VaultGraph.reloadFromUi(vaultId));
+    });
   },
 
   _cacheKey(vaultId) {
@@ -41,8 +79,9 @@ const VaultGraph = {
     VaultGraph.scope = scope;
     VaultGraph.focus = focus;
 
-    if (typeof vis === "undefined") {
-      container.innerHTML = "<p class='loading'>Graph library failed to load.</p>";
+    const visLib = VaultGraph._visLib();
+    if (!visLib) {
+      container.innerHTML = "<p class='loading'>Graph library failed to load. Check your network connection and refresh.</p>";
       return;
     }
 
@@ -65,7 +104,7 @@ const VaultGraph = {
       }
 
       if (!data.nodes?.length) {
-        container.innerHTML = "<p class='loading'>No nodes for this scope.</p>";
+        container.innerHTML = "<p class='loading'>No nodes for this scope. Try another scope or open a theme/subtopic note first.</p>";
         return;
       }
 
@@ -81,7 +120,7 @@ const VaultGraph = {
       const heavy = data.nodes.length > 120;
       const sizeFor = (grp) => ({ meta: 12, video: 18, theme: 24, subtopic: 10, topic: 10, root: 8 }[grp] || 8);
 
-      VaultGraph._nodes = new vis.DataSet(
+      VaultGraph._nodes = new visLib.DataSet(
         data.nodes.map((n) => {
           const grp = n.group || "root";
           const colors = groupColors[grp] || groupColors.root;
@@ -98,7 +137,7 @@ const VaultGraph = {
         })
       );
 
-      VaultGraph._edges = new vis.DataSet(
+      VaultGraph._edges = new visLib.DataSet(
         data.edges.map((e, i) => ({
           id: i,
           from: e.source,
@@ -129,10 +168,12 @@ const VaultGraph = {
         edges: { smooth: heavy ? false : { type: "dynamic", roundness: 0.15 } },
       };
 
-      VaultGraph.network = new vis.Network(container, { nodes: VaultGraph._nodes, edges: VaultGraph._edges }, options);
+      VaultGraph._physicsOn = !heavy;
+      VaultGraph.network = new visLib.Network(container, { nodes: VaultGraph._nodes, edges: VaultGraph._edges }, options);
       if (!heavy) {
         VaultGraph.network.once("stabilizationIterationsDone", () => {
           VaultGraph.network.setOptions({ physics: { enabled: false } });
+          VaultGraph._physicsOn = false;
         });
       }
 
@@ -140,12 +181,17 @@ const VaultGraph = {
         if (!params.nodes.length) return;
         const path = params.nodes[0];
         if (typeof window.openNote === "function") {
-          document.querySelector('.pane-tab[data-tab="note"]')?.click();
+          VaultGraph.switchTab("note");
           window.openNote(path);
         }
       });
 
       VaultGraph._bindToolbar();
+      setTimeout(() => {
+        if (!VaultGraph.network) return;
+        VaultGraph.network.redraw();
+        VaultGraph.network.fit({ animation: false });
+      }, 80);
     } catch (err) {
       container.innerHTML = `<p class="loading">Graph error: ${String(err.message || err)}</p>`;
     }
@@ -157,65 +203,72 @@ const VaultGraph = {
     const fit = document.getElementById("graph-fit");
     const physics = document.getElementById("graph-physics");
     if (!VaultGraph.network) return;
-    zoomIn?.onclick = () => VaultGraph.network.moveTo({ scale: VaultGraph.network.getScale() * 1.25 });
-    zoomOut?.onclick = () => VaultGraph.network.moveTo({ scale: VaultGraph.network.getScale() / 1.25 });
-    fit?.onclick = () => VaultGraph.network.fit({ animation: true });
-    physics?.onclick = () => {
-      const on = !VaultGraph.network.getOptions().physics?.enabled;
-      VaultGraph.network.setOptions({ physics: { enabled: on } });
+    if (zoomIn) zoomIn.onclick = () => VaultGraph.network.moveTo({ scale: VaultGraph.network.getScale() * 1.25 });
+    if (zoomOut) zoomOut.onclick = () => VaultGraph.network.moveTo({ scale: VaultGraph.network.getScale() / 1.25 });
+    if (fit) fit.onclick = () => VaultGraph.network.fit({ animation: true });
+    if (physics) physics.onclick = () => {
+      VaultGraph._physicsOn = !VaultGraph._physicsOn;
+      VaultGraph.network.setOptions({ physics: { enabled: VaultGraph._physicsOn } });
       physics.textContent = typeof VaultI18n !== "undefined"
-        ? VaultI18n.t(on ? "freezeLayout" : "unfreezeLayout")
-        : (on ? "Freeze" : "Unfreeze");
+        ? VaultI18n.t(VaultGraph._physicsOn ? "freezeLayout" : "unfreezeLayout")
+        : (VaultGraph._physicsOn ? "Freeze" : "Unfreeze");
     };
+  },
+
+  _resolveFocus(scope) {
+    const folder = window.activeFolder || "";
+    const notePath = window.activeNotePath || "";
+    if (scope === "theme") {
+      if (folder.startsWith("Topics/")) {
+        const parts = folder.split("/").filter(Boolean);
+        if (parts.length >= 2) return `${parts[0]}/${parts[1]}`;
+        return folder;
+      }
+      if (notePath.startsWith("Topics/")) {
+        const parts = notePath.replace(/\.md$/, "").split("/").filter(Boolean);
+        if (parts.length >= 2) return `${parts[0]}/${parts[1]}`;
+      }
+    }
+    if (scope === "subtopic") {
+      if (notePath.startsWith("Topics/") && notePath.endsWith(".md")) return notePath;
+      if (folder.startsWith("Topics/")) {
+        const parts = folder.split("/").filter(Boolean);
+        if (parts.length >= 3) {
+          const guess = `${parts.slice(0, 3).join("/")}.md`;
+          return guess;
+        }
+      }
+    }
+    return "";
   },
 
   reloadFromUi(vaultId) {
     const sel = document.getElementById("graph-scope");
     const scope = sel?.value || "overview";
-    let focus = "";
-    if (scope === "theme") {
-      if (window.activeFolder?.startsWith("Topics/")) {
-        const parts = window.activeFolder.split("/");
-        focus = parts.length >= 2 ? `${parts[0]}/${parts[1]}` : window.activeFolder;
-      } else if (window.activeNotePath?.startsWith("Topics/")) {
-        const parts = window.activeNotePath.replace(/\.md$/, "").split("/");
-        if (parts.length === 2) focus = parts.join("/");
-      }
-    } else if (scope === "subtopic" && window.activeNotePath?.startsWith("Topics/")) {
-      focus = window.activeNotePath;
-    }
+    const focus = scope === "overview" || scope === "full" ? "" : VaultGraph._resolveFocus(scope);
     VaultGraph.load(vaultId, { scope, focus });
   },
 };
 
-/** Bind Note/Graph tab switching — also callable when scripts load after DOM ready. */
+/** Bind Note/Graph tab switching — event delegation survives i18n relabels. */
 VaultGraph.bindTabs = function bindTabs() {
   if (VaultGraph._tabsBound) return;
   VaultGraph._tabsBound = true;
 
-  document.querySelectorAll(".pane-tab").forEach((tab) => {
-    tab.addEventListener("click", (e) => {
-      e.preventDefault();
-      document.querySelectorAll(".pane-tab").forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-      const isGraph = tab.dataset.tab === "graph";
-      const notePanel = document.getElementById("note-panel");
-      const graphPanel = document.getElementById("graph-panel");
-      if (notePanel) notePanel.hidden = isGraph;
-      if (graphPanel) graphPanel.hidden = !isGraph;
-      const titleBar = document.getElementById("note-title-bar");
-      if (titleBar) titleBar.hidden = isGraph;
-      if (isGraph && window.vaultId) {
-        requestAnimationFrame(() => VaultGraph.reloadFromUi(window.vaultId));
-      }
-    });
+  document.addEventListener("click", (e) => {
+    const tab = e.target.closest?.(".pane-tab[data-tab]");
+    if (!tab) return;
+    e.preventDefault();
+    VaultGraph.switchTab(tab.dataset.tab);
   });
 
   document.getElementById("graph-scope")?.addEventListener("change", () => {
-    if (window.vaultId && document.querySelector('.pane-tab[data-tab="graph"].active')) {
+    if (VaultGraph.activeTab === "graph" && window.vaultId) {
       VaultGraph.reloadFromUi(window.vaultId);
     }
   });
+
+  VaultGraph.switchTab("note");
 };
 
 if (document.readyState === "loading") {

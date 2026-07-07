@@ -52,9 +52,9 @@ Special thanks to **Christos (Chris) Tsounis** and **Spyros Andrianos**, along w
   - `YouTube playlist or whole channel → transcripts → enrichment → NotebookLM artifacts → Obsidian notes`
 - **Language‑aware transcripts**
   - Prefers Greek subtitles (`el`), falls back to English (`en`) automatically.
-- **Cheap, modern LLMs**
+- **Affordable transcript enrichment**
   - Default: **OpenAI `gpt-4o-mini`** (~$0.13 for 51 videos, see `docs/COST_51_VIDEOS.md`).
-  - Optional: Gemini (`gemini-2.0-flash`) if you don’t want OpenAI.
+  - Optional: Gemini (`gemini-2.0-flash`) if you prefer Google’s API.
 - **NotebookLM integration (optional)**
   - Creates/reuses a notebook, adds all video URLs as sources.
   - Generates **Audio Overview (podcast)**, **Mind Map**, **Quiz**, **Flashcards**.
@@ -217,8 +217,8 @@ python pipeline.py --only enrichment --resume
 | `GEMINI_MODEL` | No | Gemini model, default `gemini-2.0-flash`. |
 | `OBSIDIAN_VAULT_PATH` | Optional | If set, notes are mirrored here (under `OBSIDIAN_SUBFOLDER/experiment-name`). Primary output is always `data/<name>/vault/`. |
 | `OBSIDIAN_SUBFOLDER` | Optional | Subfolder inside your vault for the mirror, default `YouTube Playlists`. |
-| `OUTPUT_LANGUAGE` | Optional | LLM output language (`english` or `greek`). |
-| `API_DELAY_SECONDS` | Optional | Delay between LLM calls (OpenAI default 2s; Gemini may need more). |
+| `OUTPUT_LANGUAGE` | Optional | Enrichment output language (`english` or `greek`). |
+| `API_DELAY_SECONDS` | Optional | Delay between enrichment API calls (OpenAI default 2s; Gemini may need more). |
 | `TRANSCRIPT_DELAY_SECONDS` | Optional | Delay between subtitle downloads to avoid YouTube 429s. |
 | `NOTEBOOKLM_NOTEBOOK_NAME` | Optional | Name for new NotebookLM notebooks. |
 | `NOTEBOOKLM_NOTEBOOK_ID` | Optional | If set (or present in `data/manifest.json`), the pipeline **reuses** this notebook instead of creating a new one. |
@@ -258,7 +258,7 @@ To force a **new** notebook:
 ```text
 data/metabolomic-medicine/
 ├── transcripts/               # Raw transcript JSON per video
-├── enriched/                  # LLM output JSON per video
+├── enriched/                  # Enrichment output JSON per video
 ├── notebooklm_outputs/        # Podcast, mindmap, quiz, flashcards
 ├── vault/                     # ← Open this folder in Obsidian (File → Open folder as vault)
 │   ├── 00 - Index.md
@@ -287,7 +287,7 @@ For how to use all of this **inside Obsidian** (graph view, NotebookLM artifacts
 
 ---
 
-## Enrichment backends: OpenAI vs Gemini 🤖
+## Enrichment backends: OpenAI vs Gemini
 
 | | OpenAI (default) | Gemini |
 |--|------------------|--------|
@@ -359,10 +359,22 @@ If you omit `--url`, the pipeline uses `PLAYLIST_URL` from `.env`.
 
 Browse all vaults and explore notes in the browser — folder tree, search, backlinks, bilingual UI (EL/EN), and scoped graph views.
 
+**Full walkthrough:** [`docs/USER_WALKTHROUGH.md`](docs/USER_WALKTHROUGH.md)
+
 ```bash
 pip install -r requirements.txt   # includes fastapi + uvicorn
 ./run_dashboard.sh                # http://127.0.0.1:8787
 ```
+
+### Dashboard screenshots
+
+| Home — ingest & vault cards | Explorer — note view | Graph — link view |
+|-----------------------------|----------------------|-------------------|
+| ![Dashboard home](docs/screenshots/01-dashboard-home.png) | ![Explorer note](docs/screenshots/02-explorer-note.png) | ![Graph view](docs/screenshots/03-explorer-graph.png) |
+
+Theme-scoped graph (select a `Topics/…` folder first):
+
+![Graph theme scope](docs/screenshots/04-graph-theme-scope.png)
 
 **Discovers vaults from:**
 - `data/*/vault/` (pipeline experiments)
@@ -389,8 +401,7 @@ Requires `ffmpeg` on your PATH and an OpenAI or Gemini API key in `.env`.
 
 **Language:** UI strings and note section headers switch between Greek and English; episode body text stays in the source output language unless re-ingested with `OUTPUT_LANGUAGE=greek`.
 
-Agent workflow for contributors: `AGENTS.md`, `WORKFLOW.md`, `CURSOR.md`.  
-User test scenarios: `docs/USER_TEST_SCENARIOS.md` · automated: `pytest tests/`
+**Docs:** [`docs/USER_WALKTHROUGH.md`](docs/USER_WALKTHROUGH.md) · [`docs/OBSIDIAN_USAGE.md`](docs/OBSIDIAN_USAGE.md) · [`docs/USER_TEST_SCENARIOS.md`](docs/USER_TEST_SCENARIOS.md) · automated checks: `pytest tests/`
 
 ---
 
@@ -425,7 +436,7 @@ User test scenarios: `docs/USER_TEST_SCENARIOS.md` · automated: `pytest tests/`
 ## Contributing / forking
 
 - This repo is intended as a **template** you can fork:
-  - swap in different LLMs or prompts,
+  - swap in different enrichment models or prompts,
   - change the note format,
   - integrate with other tools (Logseq, Notion, etc.).
 - If you publish a fork or add integrations, consider mentioning the original project so others can find it.

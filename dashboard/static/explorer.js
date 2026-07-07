@@ -167,6 +167,9 @@ async function openNote(path) {
     if (noteLoadProgress) noteLoadProgress.update({ percent: 55, label: typeof VaultI18n !== "undefined" ? VaultI18n.t("rendering") : "Rendering…", detail: path });
     setNoteToolbar(path, note.title);
     await renderNoteView(path, note.content);
+    if (typeof VaultGraph !== "undefined" && VaultGraph.activeTab === "graph") {
+      VaultGraph.reloadFromUi(vaultId);
+    }
   } catch (err) {
     const container = document.getElementById("note-content");
     if (noteLoadProgress) noteLoadProgress.fail(`Error: ${err.message}`);
@@ -247,7 +250,7 @@ async function saveNote() {
     editing = false;
     showToast("Note saved");
     await renderNoteView(activeNotePath, content);
-    if (document.querySelector('.pane-tab[data-tab="graph"].active')) {
+    if (VaultGraph.activeTab === "graph") {
     VaultGraph.reloadFromUi(vaultId);
   }
   } catch (err) {
@@ -313,6 +316,9 @@ function bindTree(treeEl) {
       window.activeFolder = activeFolder === "" ? null : activeFolder;
       if (activeFolder === "") activeFolder = null;
       renderNoteList();
+      if (typeof VaultGraph !== "undefined" && VaultGraph.activeTab === "graph" && window.vaultId) {
+        VaultGraph.reloadFromUi(window.vaultId);
+      }
     });
   });
 }
@@ -367,7 +373,7 @@ async function runTopicSync(vaultProgress, auto = false) {
     ? `Organized ${r.synced} subtopics into ${folders} theme folders`
     : `Synced ${r.synced} topics`;
   showToast(msg);
-  if (document.querySelector('.pane-tab[data-tab="graph"].active')) {
+  if (VaultGraph.activeTab === "graph") {
     VaultGraph.reloadFromUi(vaultId);
   }
   return r;
@@ -397,7 +403,7 @@ async function init() {
       renderNoteList();
       await reloadVaultTreeAndNotes(null).catch(() => {});
       if (activeNotePath && !editing) openNote(activeNotePath);
-      if (document.querySelector('.pane-tab[data-tab="graph"].active') && window.vaultId) {
+      if (VaultGraph.activeTab === "graph" && window.vaultId) {
         VaultGraph.reloadFromUi(window.vaultId);
       }
     });

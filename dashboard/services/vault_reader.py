@@ -374,9 +374,15 @@ class VaultReader:
                 if note_types[n.path] in ("meta", "theme", "video")
             }
         elif scope == "theme" and focus:
-            focus_base = focus.replace(".md", "")
+            focus_base = focus.replace(".md", "").strip("/")
             prefix = focus_base if focus_base.startswith("Topics/") else f"Topics/{focus_base}"
-            allowed = {n.path for n in self._all_notes if n.path == prefix or n.path.startswith(prefix + "/")}
+            theme_md = f"{prefix}.md" if not prefix.endswith(".md") else prefix
+            allowed = {
+                n.path for n in self._all_notes
+                if n.path == theme_md
+                or n.path == prefix
+                or n.path.startswith(prefix + "/")
+            }
         elif scope == "subtopic" and focus:
             allowed = {focus if focus.endswith(".md") else focus + ".md"}
             allowed = {p for p in allowed if any(n.path == p for n in self._all_notes)}

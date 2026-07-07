@@ -11,6 +11,7 @@ SKILLS.md
 
 # Test cache
 .pytest_cache/
+tmp/
 
 # Python
 __pycache__/

@@ -247,6 +247,14 @@ main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .modal-card .hint { font-weight: 400; color: var(--muted); font-size: 0.75rem; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem; }
 
+.pane.note-pane {
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .pane-tabs {
   display: flex;
   gap: 0;
@@ -254,7 +262,9 @@ main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
   background: var(--card);
   position: relative;
   z-index: 3;
+  flex-shrink: 0;
 }
+
 .pane-tab {
   flex: 1;
   padding: 0.5rem;
@@ -265,10 +275,27 @@ main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
   cursor: pointer;
   border-bottom: 2px solid transparent;
   pointer-events: auto;
+  position: relative;
+  z-index: 4;
 }
 .pane-tab.active { border-bottom-color: var(--accent); font-weight: 600; }
-.tab-panel { height: calc(100% - 5.5rem); overflow: auto; }
-.graph-canvas { height: calc(100vh - 180px); min-height: 320px; background: var(--bg); }
+
+.tab-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: none !important;
+}
+.tab-panel.is-active {
+  display: flex !important;
+  flex-direction: column;
+}
+#note-panel.is-active {
+  display: block !important;
+}
+[hidden] { display: none !important; }
+
+.graph-canvas { flex: 1; min-height: 320px; height: auto; background: var(--bg); }
 .graph-stats {
   font-size: 0.75rem;
   color: var(--muted);
@@ -312,8 +339,6 @@ main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
   overflow-y: auto;
   background: var(--sidebar);
 }
-
-.pane.note-pane { background: var(--card); }
 
 .pane-header {
   padding: 0.75rem 1rem;
@@ -519,7 +544,7 @@ main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
   border-radius: 4px;
 }
 
-#graph-canvas, .graph-canvas { min-height: 480px; height: calc(100vh - 200px); background: #fafaf8; }
+#graph-canvas, .graph-canvas { flex: 1; min-height: 360px; background: #fafaf8; }
 .graph-toolbar {
   display: flex;
   gap: 0.35rem;
