@@ -1,4 +1,4 @@
-"""LLM enrichment: summary, key ideas, takeaways, quotes, wikilinks. Greek → English. Supports OpenAI or Gemini."""
+"""LLM enrichment: summary, key ideas, takeaways, quotes, wikilinks. Multilingual → OUTPUT_LANGUAGE."""
 import json
 import os
 import re
@@ -9,30 +9,34 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from utils.language_utils import enrichment_instructions, lang_display_name, resolve_source_language
 from utils.logger import setup_logger, log_failure
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-TRANSCRIPTS_DIR = DATA_DIR / "transcripts"
-ENRICHED_DIR = DATA_DIR / "enriched"
-MANIFEST_PATH = DATA_DIR / "manifest.json"
+_DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-PROMPT_TEMPLATE = '''The following is a transcript from a Greek YouTube video titled: "{title}"
-The transcript is in Greek. Please respond entirely in English.
+
+PROMPT_TEMPLATE = '''The following is a transcript from a YouTube video titled: "{title}"
+Original spoken language: {source_language_name} ({source_language})
+{language_instruction}
 
 ## Summary
-Write 3-5 sentences capturing the core message.
+Write 3-5 sentences capturing the core message. Be specific to this video.
 
 ## Key Ideas
-List the 5-8 most important concepts or arguments. Each item 1-2 sentences.
+List 10-14 **specific** ideas that appear in this transcript. Rules:
+- Each bullet must reference something concrete said or shown (foods, products, numbers, studies, names, mechanisms).
+- Do NOT write generic wellness advice that could apply to any video.
+- If the speaker compares options or ranks items, capture that detail.
+- One to two sentences per bullet.
 
 ## Takeaways & Action Items
-List 3-5 practical things to remember or do.
+List 4-6 practical things grounded in what the speaker actually recommends.
 
 ## Notable Quotes
-Extract 2-4 important moments from the transcript (translate to English).
+Extract 3-5 short quotes or paraphrased moments from the transcript. {quote_lang}
 
 ## Related Concepts
-List 8-12 concepts as [[wikilinks]] that could connect to other Obsidian notes.
+List 10-16 concepts as [[wikilinks]] for an Obsidian knowledge base (use {output_language} concept names).
 
 TRANSCRIPT:
 {transcript}
@@ -75,12 +79,22 @@ def _call_gemini(prompt: str, client, model_name: str) -> str:
     return text.strip()
 
 
-def run_gemini_agent(manifest: dict | None = None, resume: bool = False) -> dict:
+def run_gemini_agent(
+    manifest: dict | None = None,
+    resume: bool = False,
+    data_dir: Path | None = None,
+    only_video_ids: list[str] | None = None,
+) -> dict:
     """
     Enrich each transcript with an LLM (OpenAI or Gemini). Save to data/enriched/{video_id}.json.
     If OPENAI_API_KEY is set, uses OpenAI; else uses GEMINI_API_KEY. If resume=True, skips already-enriched videos.
     """
     logger = setup_logger()
+    data_dir = data_dir or _DEFAULT_DATA_DIR
+    manifest_path = data_dir / "manifest.json"
+    transcripts_dir = data_dir / "transcripts"
+    enriched_dir = data_dir / "enriched"
+
     openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
     gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
     # Prefer OpenAI (default); fall back to Gemini if no OpenAI key.
@@ -104,11 +118,11 @@ def run_gemini_agent(manifest: dict | None = None, resume: bool = False) -> dict
     delay_seconds = float(os.environ.get("API_DELAY_SECONDS", "2" if provider == "openai" else "6"))
 
     if manifest is None:
-        if not MANIFEST_PATH.exists():
-            raise FileNotFoundError(f"Manifest not found: {MANIFEST_PATH}. Run transcript agent first.")
-        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"Manifest not found: {manifest_path}. Run transcript agent first.")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-    ENRICHED_DIR.mkdir(parents=True, exist_ok=True)
+    enriched_dir.mkdir(parents=True, exist_ok=True)
 
     # Include any video that has a transcript; skip only if resume and already enriched.
     # (Don't filter by manifest "status" — it gets set to "failed" by Gemini, so we'd process 0 on retry.)
@@ -117,28 +131,29 @@ def run_gemini_agent(manifest: dict | None = None, resume: bool = False) -> dict
         vid = v.get("id")
         if not vid:
             continue
-        tp = v.get("transcript_path") or TRANSCRIPTS_DIR / f"{vid}.json"
+        tp = v.get("transcript_path") or transcripts_dir / f"{vid}.json"
         if not Path(tp).exists():
             continue
-        if resume and (ENRICHED_DIR / f"{vid}.json").exists():
+        if resume and (enriched_dir / f"{vid}.json").exists():
+            continue
+        if only_video_ids and vid not in only_video_ids:
             continue
         videos.append(v)
-    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
     from rich.console import Console
+    from utils.progress_helpers import make_cli_progress
+
     console = Console()
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TextColumn("{task.completed}/{task.total}"),
-        console=console,
-    ) as progress:
+    output_lang = (os.environ.get("OUTPUT_LANGUAGE") or "english").strip().lower()
+    if output_lang not in ("english", "greek"):
+        output_lang = "english"
+
+    with make_cli_progress(console) as progress:
         task = progress.add_task(f"Enriching with {provider}...", total=len(videos))
         for v in videos:
             video_id = v.get("id")
-            transcript_path = v.get("transcript_path") or str(TRANSCRIPTS_DIR / f"{video_id}.json")
-            enriched_path = ENRICHED_DIR / f"{video_id}.json"
+            transcript_path = v.get("transcript_path") or str(transcripts_dir / f"{video_id}.json")
+            enriched_path = enriched_dir / f"{video_id}.json"
 
             if resume and enriched_path.exists():
                 progress.advance(task)
@@ -162,12 +177,32 @@ def run_gemini_agent(manifest: dict | None = None, resume: bool = False) -> dict
                 progress.advance(task)
                 continue
 
+            source_lang = data.get("source_language") or ""
+            source_name = data.get("source_language_name") or ""
+            if not source_lang:
+                source_lang, source_name = resolve_source_language(
+                    transcript,
+                    subtitle_lang=data.get("subtitle_lang"),
+                    video_lang=data.get("video_lang"),
+                )
+            language_instruction, quote_lang = enrichment_instructions(
+                output_lang, source_lang, source_name
+            )
+
             # Truncate only for small-context models (e.g. gpt-3.5-turbo 16k); gpt-4o-mini 128k can take full
             if "3.5" in model_name and len(transcript) > MAX_TRANSCRIPT_CHARS:
                 transcript = transcript[:MAX_TRANSCRIPT_CHARS] + "\n\n[Transcript truncated for length.]"
                 logger.debug("Truncated transcript for %s to %s chars", video_id, MAX_TRANSCRIPT_CHARS)
 
-            prompt = PROMPT_TEMPLATE.format(title=title, transcript=transcript)
+            prompt = PROMPT_TEMPLATE.format(
+                title=title,
+                transcript=transcript,
+                source_language=source_lang,
+                source_language_name=source_name or lang_display_name(source_lang),
+                language_instruction=language_instruction,
+                quote_lang=quote_lang,
+                output_language="Greek" if output_lang == "greek" else "English",
+            )
             text = ""
             max_retries = 4
             for attempt in range(max_retries):
@@ -208,6 +243,9 @@ def run_gemini_agent(manifest: dict | None = None, resume: bool = False) -> dict
                 **data,
                 "gemini_sections": sections,
                 "gemini_notes": llm_notes,
+                "source_language": source_lang,
+                "source_language_name": source_name or lang_display_name(source_lang),
+                "output_language": output_lang,
             }
             try:
                 enriched_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -220,6 +258,6 @@ def run_gemini_agent(manifest: dict | None = None, resume: bool = False) -> dict
             progress.advance(task)
             time.sleep(delay_seconds)
 
-    MANIFEST_PATH.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    logger.info("Enrichment agent (%s) finished. Enriched files in %s", provider, ENRICHED_DIR)
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    logger.info("Enrichment agent (%s) finished. Enriched files in %s", provider, enriched_dir)
     return manifest

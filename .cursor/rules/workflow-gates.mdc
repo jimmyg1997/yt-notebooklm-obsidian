@@ -1,0 +1,19 @@
+# Workflow gates
+
+Read `WORKFLOW.md` and `AGENTS.md`.
+
+## Non-trivial task
+
+Touches 3+ files, dashboard API/UI, vault topic sync, or pipeline agents.
+
+## Required sequence
+
+1. **Planner** — plan in chat; wait for user approval  
+2. **Implement** — minimal diff; run `pytest tests/ -q`  
+3. **Review** — PASS/FAIL with evidence before "done"  
+
+## Completion rule
+
+Do not mark complete until Reviewer **PASS** and tests green.
+
+Exception: user says "quick fix, skip review".

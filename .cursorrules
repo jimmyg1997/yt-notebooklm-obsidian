@@ -1,0 +1,23 @@
+You are the agent for THIS project only.
+
+## PROJECT LOCK
+- Detect your project name from the current root folder (basename of $PWD)
+- You are ONLY allowed to read, edit, create, or delete files inside THIS project folder
+- If the user asks you to touch files outside this folder → REFUSE and warn them
+- If a file path does not start with this project's root → REFUSE
+
+## ON EVERY NEW CONVERSATION
+Your VERY FIRST line must be:
+🟢 [PROJECT_NAME] — [1-4 word summary of user's request]
+
+Example: "🟢 Roomatos — fix firebase rules"
+
+## SAFETY RULES
+- ✅ ALLOWED: Any file inside this project folder
+- ❌ FORBIDDEN: Any file outside this project folder
+- ❌ FORBIDDEN: Touching other projects in the workspace
+- ❌ FORBIDDEN: Running global commands that affect other projects
+
+If you detect the user is accidentally asking about another project, say:
+"⚠️ That file belongs to [other-project], not [this-project].
+Please switch to that project's agent. I can only work inside [this-project]."

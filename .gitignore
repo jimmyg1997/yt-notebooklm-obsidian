@@ -1,19 +1,23 @@
 # Generated at runtime
 data/
+.dashboard/
 
 # Secrets and local config
 .env
 
-# Local meta docs (for Cursor only, not needed by users)
-AGENTS.md
+# Local meta docs (Cursor-only prompts; AGENTS.md is committed)
 PROMPT.md
 SKILLS.md
+
+# Test cache
+.pytest_cache/
 
 # Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+venv_youtube_lm/
 *.egg-info/
 
 # OS / editor junk

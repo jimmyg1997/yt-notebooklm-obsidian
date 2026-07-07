@@ -1,4 +1,4 @@
-# YouTube → AI → NotebookLM → Obsidian 📺✨
+# YouTube → NotebookLM → Obsidian 📺✨
 
 Turn any YouTube playlist into **searchable, linked notes** with summaries, key ideas, and NotebookLM artifacts – ready for Obsidian or any Markdown editor.
 
@@ -49,7 +49,7 @@ Special thanks to **Christos (Chris) Tsounis** and **Spyros Andrianos**, along w
 ## Features 🚀
 
 - **End‑to‑end automation**
-  - `YouTube playlist → transcripts → LLM enrichment → NotebookLM artifacts → Obsidian notes`
+  - `YouTube playlist or whole channel → transcripts → enrichment → NotebookLM artifacts → Obsidian notes`
 - **Language‑aware transcripts**
   - Prefers Greek subtitles (`el`), falls back to English (`en`) automatically.
 - **Cheap, modern LLMs**
@@ -76,7 +76,7 @@ Special thanks to **Christos (Chris) Tsounis** and **Spyros Andrianos**, along w
 ## Requirements 🧱
 
 - **Python 3.10+**
-- **YouTube playlist URL** (must include `list=...`)
+- **YouTube playlist URL** (with `list=...`) **or whole channel URL** (e.g. `https://www.youtube.com/@ChannelName`) — the pipeline analyses all videos from the playlist or channel
 - **OpenAI API key** (recommended) or **Gemini API key**
 - **Obsidian** optional — notes can be written to a normal folder and opened in Obsidian later.  
   See **`docs/OBSIDIAN_USAGE.md`** for how to use the vault and the NotebookLM artifacts.
@@ -90,7 +90,6 @@ Special thanks to **Christos (Chris) Tsounis** and **Spyros Andrianos**, along w
 ```bash
 git clone https://github.com/jimmyg1997/yt-notebooklm-obsidian.git
 cd yt-notebooklm-obsidian
-cd youtube-lm
 pip install -r requirements.txt
 playwright install chromium   # used by notebooklm-py for login
 ```
@@ -104,8 +103,10 @@ cp .env.example .env
 Edit `.env` with at least:
 
 ```env
-# Required: your playlist
+# Required: playlist URL (with list=...) or channel URL (all uploads)
 PLAYLIST_URL=https://www.youtube.com/watch?v=...&list=PLxxxxx
+# Or use a whole channel, e.g.:
+# PLAYLIST_URL=https://www.youtube.com/@ChannelName
 
 # Enrichment: OpenAI (default) or Gemini
 OPENAI_API_KEY=sk-...          # preferred; uses gpt-4o-mini
@@ -118,7 +119,7 @@ OPENAI_MODEL=gpt-4o-mini       # default
 Optional:
 
 ```env
-# Obsidian: real path → notes in vault; leave unset → notes in ./data/obsidian_export/
+# Obsidian: if set, notes are mirrored here; primary output is always data/<name>/vault/
 OBSIDIAN_VAULT_PATH=/Users/you/Documents/MyVault
 OBSIDIAN_SUBFOLDER=YouTube Playlists
 
@@ -133,12 +134,15 @@ OUTPUT_LANGUAGE=english
 
 ### 3. Run the pipeline
 
-**Option A — one script (setup + run, optional playlist override):**
+**Option A — one script (setup + run, optional URL and args):**
 
 ```bash
-./run_pipeline.sh                                    # use playlist from .env
-./run_pipeline.sh "https://youtube.com/watch?v=...&list=PLxxxx"   # set playlist and run
+./run_pipeline.sh                                    # use PLAYLIST_URL from .env
+./run_pipeline.sh "https://youtube.com/@Channel"     # channel URL (all uploads)
+./run_pipeline.sh "https://youtube.com/playlist?list=PLxxxx" --limit 20   # playlist, first 20 videos
+./run_pipeline.sh "https://youtube.com/@Channel" --limit 10 --resume
 ./run_pipeline.sh --resume                           # skip already-processed videos
+./run_pipeline.sh --update                           # incremental update (resume + add only missing NotebookLM sources)
 ./run_pipeline.sh --skip-notebooklm                  # run without NotebookLM step
 ./run_pipeline.sh --setup-only                       # only install deps and check .env
 ```
@@ -165,7 +169,7 @@ python pipeline.py
 # 1) Get transcripts (Greek/English subtitles)
 python pipeline.py --only transcripts
 
-# 2) Enrich with AI (OpenAI gpt-4o-mini by default)
+# 2) Enrich transcripts (OpenAI gpt-4o-mini by default)
 python pipeline.py --only enrichment --resume
 
 # 3) Optional: NotebookLM (create/reuse notebook, add sources if new, generate podcast + mind map + quiz + flashcards)
@@ -175,6 +179,21 @@ python pipeline.py --only notebooklm
 # 4) Write Obsidian (or local) Markdown notes
 python pipeline.py --only obsidian
 ```
+
+**Incremental update mode (recommended for recurring playlists):**
+
+```bash
+# Uses PLAYLIST_URL from .env
+python pipeline.py --update
+
+# or via helper script
+./run_pipeline.sh --update
+```
+
+`--update` does three things:
+- implies `--resume` (skip already processed transcript/enrichment files),
+- reuses your existing NotebookLM notebook (if configured/saved),
+- adds **only** YouTube sources that are not already in that notebook.
 
 **Resume after a crash or interrupt:** skips videos that already have output files.
 
@@ -190,13 +209,14 @@ python pipeline.py --only enrichment --resume
 
 | Variable | Required | Description |
 |---------|----------|-------------|
-| `PLAYLIST_URL` | **Yes** | YouTube playlist URL (must include `list=...`). |
+| `EXPERIMENT_NAME` | No | Short slug for this run (e.g. `metabolomic-medicine`). Creates `data/NAME/` and vault subfolder so you can run multiple experiments. |
+| `PLAYLIST_URL` | **Yes** | YouTube playlist URL (with `list=...`) or **whole channel URL** (e.g. `https://www.youtube.com/@ChannelName`) to analyse all uploads. |
 | `OPENAI_API_KEY` | Recommended | OpenAI key; if set, OpenAI is used for enrichment. |
 | `OPENAI_MODEL` | No | OpenAI model, default `gpt-4o-mini`. |
 | `GEMINI_API_KEY` | Optional | Used if `OPENAI_API_KEY` is not set. |
 | `GEMINI_MODEL` | No | Gemini model, default `gemini-2.0-flash`. |
-| `OBSIDIAN_VAULT_PATH` | Optional | Absolute path to your Obsidian vault; if unset, notes go to `data/obsidian_export/YouTube Playlists/`. |
-| `OBSIDIAN_SUBFOLDER` | Optional | Subfolder inside vault/export, default `YouTube Playlists`. |
+| `OBSIDIAN_VAULT_PATH` | Optional | If set, notes are mirrored here (under `OBSIDIAN_SUBFOLDER/experiment-name`). Primary output is always `data/<name>/vault/`. |
+| `OBSIDIAN_SUBFOLDER` | Optional | Subfolder inside your vault for the mirror, default `YouTube Playlists`. |
 | `OUTPUT_LANGUAGE` | Optional | LLM output language (`english` or `greek`). |
 | `API_DELAY_SECONDS` | Optional | Delay between LLM calls (OpenAI default 2s; Gemini may need more). |
 | `TRANSCRIPT_DELAY_SECONDS` | Optional | Delay between subtitle downloads to avoid YouTube 429s. |
@@ -219,8 +239,8 @@ python pipeline.py --only enrichment --resume
 
 - On **later** runs:
   - if `NOTEBOOKLM_NOTEBOOK_ID` is set in `.env` or `notebooklm_notebook_id` exists in `manifest.json`,
-  - the pipeline **reuses** that notebook (no new notebook, no re‑adding sources),
-  - and only regenerates / redownloads artifacts.
+  - the pipeline **reuses** that notebook,
+  - and performs source sync by adding **only missing** YouTube URLs (no duplicates).
 
 To force a **new** notebook:
 
@@ -231,33 +251,37 @@ To force a **new** notebook:
 
 ## Output layout 🗂️
 
-**In your vault (or `data/obsidian_export/`):**
+**All output for a run lives in one folder** (with or without an experiment name). Notes are always written into `data/.../vault/` so you can open that folder directly in Obsidian.
+
+**With an experiment name** (e.g. `EXPERIMENT_NAME=metabolomic-medicine` or `--name metabolomic-medicine`):
 
 ```text
-YouTube Playlists/
-├── 00 - Index.md              ← Master index (MOC) with links to all notes + NotebookLM links
-├── 01 - Video Title.md
-├── 02 - Video Title.md
-├── ...
-└── notebooklm/                ← Present only if you ran the NotebookLM step
-    ├── podcast.mp3
-    ├── mindmap.json
-    ├── quiz.json
-    ├── flashcards.json
-    └── NotebookLM Artifacts.md   ← How to use these + mind map outline
+data/metabolomic-medicine/
+├── transcripts/               # Raw transcript JSON per video
+├── enriched/                  # LLM output JSON per video
+├── notebooklm_outputs/        # Podcast, mindmap, quiz, flashcards
+├── vault/                     # ← Open this folder in Obsidian (File → Open folder as vault)
+│   ├── 00 - Index.md
+│   ├── 01 - Video Title.md
+│   ├── ...
+│   └── notebooklm/
+├── manifest.json
+└── run_report.md
 ```
 
-**Generated data (gitignored):**
+**Without an experiment name** (single default run):
 
 ```text
 data/
-├── manifest.json              # Playlist + video list + status
-├── transcripts/               # Raw transcript JSON per video
-├── enriched/                  # LLM output JSON per video
-├── notebooklm_outputs/        # Downloaded NotebookLM artifacts (if NotebookLM step ran)
-├── obsidian_export/           # Notes written here if no vault path set
-└── run_report.md              # Last run summary
+├── transcripts/
+├── enriched/
+├── notebooklm_outputs/
+├── vault/                     # ← Obsidian notes
+├── manifest.json
+└── run_report.md
 ```
+
+If `OBSIDIAN_VAULT_PATH` is set, notes are also mirrored into your main vault under `YouTube Playlists/<experiment-name>/` so they appear in your existing Obsidian app.
 
 For how to use all of this **inside Obsidian** (graph view, NotebookLM artifacts, etc.), see **`docs/OBSIDIAN_USAGE.md`**.
 
@@ -289,7 +313,91 @@ Use `--resume` with `enrichment` (and the full pipeline) to skip videos that alr
 
 ---
 
+## CLI arguments (argument-based control) 🎛️
+
+You can drive the pipeline from the command line instead of (or together with) `.env`:
+
+| Argument | Short | Description |
+|----------|--------|-------------|
+| `--name` | `-m` | **Experiment/run name.** Creates `data/NAME/` (transcripts, enriched, manifest, etc.) so you can run multiple experiments without overwriting. Use a short slug (e.g. `metabolomic-medicine`). From env: `EXPERIMENT_NAME`. |
+| `--url` | `-u` | Playlist or channel URL. Overrides `PLAYLIST_URL` from `.env`. |
+| `--source` | | Treat URL as `auto` (detect), `channel`, or `playlist`. Default: `auto`. |
+| `--limit` | `-n` | Max number of videos to process (e.g. `--limit 20`). No limit if omitted. |
+| `--resume` | | Skip videos that already have transcripts/enriched output. |
+| `--update` | | Incremental update mode: implies `--resume`, reuses NotebookLM notebook, adds only missing sources. |
+| `--only` | | Run only one step: `transcripts`, `enrichment`, `notebooklm`, `obsidian`. |
+
+**Examples:**
+
+```bash
+# Most common recurring run (playlist already in .env):
+python pipeline.py --update
+
+# Channel URL, first 30 videos only
+python pipeline.py --url "https://www.youtube.com/@MetabolomicMedicine" --limit 30
+
+# Playlist URL from CLI, then resume later
+python pipeline.py -u "https://www.youtube.com/playlist?list=PLxxxx" -n 50
+python pipeline.py --resume
+
+# Incremental update with explicit URL override
+python pipeline.py --update --url "https://www.youtube.com/playlist?list=PLxxxx"
+
+# Force URL to be treated as channel (e.g. if auto-detect fails)
+python pipeline.py --url "https://www.youtube.com/c/SomeChannel" --source channel --limit 10
+```
+
+If you omit `--url`, the pipeline uses `PLAYLIST_URL` from `.env`.
+
+**Per-experiment folders:** Set `EXPERIMENT_NAME` in `.env` or pass `--name my-experiment` so this run uses `data/my-experiment/` for transcripts, enriched files, manifest, and run report. Obsidian notes go to `OBSIDIAN_VAULT_PATH/YouTube Playlists/my-experiment/`. Run another experiment with a different `--name` and they stay separate.
+
+**Opening the vault for an experiment:** All notes are in **`data/<experiment-name>/vault/`**. In Obsidian: **File → Open folder as vault** → choose that folder (e.g. `.../yt-notebooklm-obsidian/data/metabolomic-medicine/vault`). Start from `00 - Index.md`. If you set `OBSIDIAN_VAULT_PATH`, the same notes are mirrored into your main vault under **YouTube Playlists / &lt;experiment-name&gt;**.
+
+---
+
+## Vault Dashboard (local web UI)
+
+Browse all vaults and explore notes in the browser — folder tree, search, backlinks, bilingual UI (EL/EN), and scoped graph views.
+
+```bash
+pip install -r requirements.txt   # includes fastapi + uvicorn
+./run_dashboard.sh                # http://127.0.0.1:8787
+```
+
+**Discovers vaults from:**
+- `data/*/vault/` (pipeline experiments)
+- `Vaults/*/` (local Obsidian vault roots)
+- `OBSIDIAN_VAULT_PATH` in `.env` (if set to a real path)
+
+Optional: `DASHBOARD_PORT=8787` in `.env` to change the port.
+
+**Single-video ingest:** On the dashboard home page, paste one YouTube URL and choose:
+
+- **Existing vault** — add to a vault you already have
+- **New vault — I'll name it** — enter name + optional description, then ingest
+- **New vault — auto from first video** — vault name, description, and starter theme notes are inferred after the first video is enriched
+
+Requires `ffmpeg` on your PATH and an OpenAI or Gemini API key in `.env`.
+
+**Progress bars:** Long-running steps show progress in the dashboard and CLI (`pipeline.py`, ingest jobs).
+
+**Vault editing:** Click ✎ on a vault card or **Edit vault** in explorer — change name, description, themes.
+
+**Graph view:** In explorer, open the **Graph** tab. Scopes: **overview** (fast, theme-level), **theme**, **subtopic**, or **full**. Click nodes to open notes.
+
+**Topics:** Hierarchy is **theme → cluster → subtopic** under `Topics/`. Each theme note lists **Mentioned in** episodes and **Related topics**. Use **Sync topics** in explorer to regenerate topic notes for existing vaults.
+
+**Language:** UI strings and note section headers switch between Greek and English; episode body text stays in the source output language unless re-ingested with `OUTPUT_LANGUAGE=greek`.
+
+Agent workflow for contributors: `AGENTS.md`, `WORKFLOW.md`, `CURSOR.md`.  
+User test scenarios: `docs/USER_TEST_SCENARIOS.md` · automated: `pytest tests/`
+
+---
+
 ## Troubleshooting
+
+- **yt-dlp: “No supported JavaScript runtime could be found”**  
+  This is a warning. Transcript extraction usually still works. To silence it or improve compatibility, install Node.js or [Deno](https://deno.land/) and ensure it’s on your `PATH`; yt-dlp will use it automatically.
 
 - **No subtitles for some videos**  
   Those videos stay as `status: "failed"` in `manifest.json`; only videos with transcripts get enriched and written to Obsidian.

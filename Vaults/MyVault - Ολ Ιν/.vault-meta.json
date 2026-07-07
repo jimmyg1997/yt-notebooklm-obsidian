@@ -1,0 +1,17 @@
+{
+  "name": "MyVault - Ολ Ιν",
+  "description": "Podcast «Ολ Ιν» (Financial Greeks) — επιχειρηματικότητα, οικονομία, καριέρα, επενδύσεις. Μόνο βίντεο Ολ Ιν, χωρίς περιεχόμενο διατροφής/υγείας.",
+  "description_en": "Ολ Ιν podcast (Financial Greeks) — entrepreneurship, economics, career, and investing. Ολ Ιν videos only; no nutrition/health content.",
+  "themes": [
+    "επιχειρηματικότητα",
+    "οικονομία",
+    "καριέρα",
+    "marketing",
+    "μάθηση"
+  ],
+  "updated": "2026-07-07T22:49:55.429998+00:00",
+  "theme_profile": "business",
+  "cover_image": "assets/vault-cover.jpg",
+  "cover_video_id": "zzhNgZ7BBBA",
+  "cover_updated": "2026-07-07T22:49:55.429620+00:00"
+}

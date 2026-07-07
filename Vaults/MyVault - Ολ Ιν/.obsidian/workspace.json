@@ -1,0 +1,242 @@
+{
+  "main": {
+    "id": "7c6a6a40bd6bf208",
+    "type": "split",
+    "children": [
+      {
+        "id": "a0296e5cd9569d13",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "52ddac6f03a8a52b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "YouTube Playlists/01 - Γιατί οι εξαντλητικές δίαιτες δεν βοηθούν στην υγιή απώλεια βάρους;💪.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "01 - Γιατί οι εξαντλητικές δίαιτες δεν βοηθούν στην υγιή απώλεια βάρους;💪"
+            }
+          },
+          {
+            "id": "1deef74e8c3b5b8e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "YouTube Playlists/01 - Γιατί οι εξαντλητικές δίαιτες δεν βοηθούν στην υγιή απώλεια βάρους;💪.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "01 - Γιατί οι εξαντλητικές δίαιτες δεν βοηθούν στην υγιή απώλεια βάρους;💪"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e186ed4f1d1efa7a",
+    "type": "split",
+    "children": [
+      {
+        "id": "c9df85bbf1ea0630",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6e9f60ac69695610",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "da4be97e5d58fba4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "dbc7e6f83abc6863",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "27a511046973f15d",
+    "type": "split",
+    "children": [
+      {
+        "id": "754afaa5dcd1d433",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6d314f644f2e6508",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "2026-02-27.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 2026-02-27"
+            }
+          },
+          {
+            "id": "ddd49f3093773d2a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "2026-02-27.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 2026-02-27"
+            }
+          },
+          {
+            "id": "72e963a46dbe319a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "cc2ecc07fa0c0920",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "f9e91c8d87eef652",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "2026-02-27.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 2026-02-27"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "1deef74e8c3b5b8e",
+  "lastOpenFiles": [
+    "YouTube Playlists/02 - Αυτός Είναι ο πιο Πονεμένος Τομέας της Οικονομίας στην Ελλάδα!.md",
+    "YouTube Playlists/01 - Οι Μεγαλύτερες Αλλαγές μας – Η Επιχειρηματική μας Μεταμόρφωση Ολ Ιν.md",
+    "YouTube Playlists/01 - Γιατί οι εξαντλητικές δίαιτες δεν βοηθούν στην υγιή απώλεια βάρους;💪.md",
+    "Investment Strategies.md",
+    "Nutritional Science.md",
+    "Financial Goals.md",
+    "YouTube Playlists/notebooklm/NotebookLM Artifacts.md",
+    "YouTube Playlists/96 - Τα Social Media Κάνουν Κακό στην Επιχειρηματικότητα Η Αλήθεια πίσω από τα Fake S.md",
+    "YouTube Playlists/95 - Γαλακτοκομικά χαμηλών λιπαρών και η πραγματική διατροφική τους αξία 🥛🧀.md",
+    "YouTube Playlists/94 - Αποταμίευση, Ρίσκο και Ζώνη Άνεσης Πως να Αλλάξεις τη Νοοτροπία σου Ολ Ιν.md",
+    "YouTube Playlists/93 - Σταμάτα να Ονειρεύεσαι και Ξεκίνα Ολ Ιν.md",
+    "YouTube Playlists/92 - Ήρθε το τέλος του Dropshipping; Ολ Ιν.md",
+    "YouTube Playlists/91 - Πώς σχετίζεται η LDL με τον καρδιαγγειακό κίνδυνο; 🧬.md",
+    "YouTube Playlists/90 - Γιατί Μένω Στάσιμος στη Ζωή Μου; Ολ Ιν.md",
+    "YouTube Playlists/89 - Γιατί είναι τόσο συχνή η έλλειψη βιταμίνης D; ☀️.md",
+    "YouTube Playlists/88 - ΠΛΟΥΤΟΣ Πώς μας ΧΑΛΑΕΙ και ΤΙ να προσέξεις!.md",
+    "YouTube Playlists/87 - Γιατί η διατροφή μας είναι φτωχή σε θρεπτικά συστατικά;.md",
+    "YouTube Playlists/86 - Είναι φυσιολογικό να νιώθουμε συνέχεια κούραση; 😴⚠️.md",
+    "YouTube Playlists/85 - Είναι το Affiliate Marketing του Σατανά; Ολ Ιν.md",
+    "YouTube Playlists/84 - Οι γονείς μας μάς δίδαξαν οικονομικά λάθος! Και πληρώνουμε ακόμα τον λογαριασμό!.md",
+    "YouTube Playlists/83 - Πώς Μπορούμε να Βελτιώσουμε τη Λειτουργία του Εντέρου;│The Health Project#177.md",
+    "YouTube Playlists/82 - Συμπτώματα και αντιμετώπιση ευερέθιστου εντέρου 🥒.md",
+    "YouTube Playlists/81 - Ο κομβικός ρόλος της λεπτίνης στη ρύθμιση του βάρους 🧬.md",
+    "YouTube Playlists/80 - Είναι η Μιζέρια το Νέο Εθνικό Σπορ; Ολ Ιν.md",
+    "YouTube Playlists/79 - Ποιες ενέργειες βοηθούν στην ανάκτηση ενέργειας; ⚙️.md",
+    "YouTube Playlists/78 - 8 ΕΞΟΔΑ που σε ΚΡΑΤΑΝΕ ΦΤΩΧΟ και ΣΥΝΕΧΙΖΕΙΣ! Ολ Ιν.md",
+    "YouTube Playlists/notebooklm/podcast.mp3",
+    "Untitled 2.canvas",
+    "Untitled 1.base",
+    "Untitled.canvas",
+    "YouTube Playlists/notebooklm/flashcards.json",
+    "YouTube Playlists/notebooklm/quiz.json",
+    "YouTube Playlists/notebooklm/mindmap.json",
+    "notebooklm",
+    "YouTube Playlists/notebooklm",
+    "YouTube Playlists",
+    "Untitled.base",
+    "Untitled 1.canvas"
+  ]
+}

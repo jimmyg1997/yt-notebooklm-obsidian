@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vault Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="vault-header-brand">
+      <img id="vault-cover" class="vault-cover-thumb" alt="" hidden />
+      <div>
+      <div class="subtitle"><a href="/">← All vaults</a></div>
+      <h1 id="vault-title">Vault Explorer</h1>
+      <p id="vault-description" class="vault-description" hidden></p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <label class="lang-switch" title="UI language">
+        <span class="lang-switch-label" data-i18n="langLabel">Γλώσσα</span>
+        <select id="ui-lang" aria-label="Language">
+          <option value="el">Ελληνικά</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <button type="button" id="btn-sync-topics" class="btn-ghost" title="Link episodes to topic notes">Sync topics</button>
+      <button type="button" id="btn-edit-vault" class="btn-ghost">Edit vault</button>
+    </div>
+  </header>
+  <div id="explorer-loading" class="explorer-loading-bar progress-panel" hidden></div>
+  <div class="explorer-layout">
+    <div class="pane" id="tree-pane">
+      <div class="pane-header">Folders</div>
+      <div id="folder-tree"></div>
+    </div>
+    <div class="pane">
+      <div class="pane-header">Notes</div>
+      <input type="search" class="search-box" id="note-search" placeholder="Filter notes…" />
+      <div id="note-list"></div>
+    </div>
+    <div class="pane note-pane">
+      <div class="pane-tabs">
+        <button type="button" class="pane-tab active" data-tab="note">Note</button>
+        <button type="button" class="pane-tab" data-tab="graph">Graph</button>
+      </div>
+      <div class="pane-header note-toolbar" id="note-title-bar">
+        <span id="note-path-label">Select a note</span>
+        <span class="note-actions" id="note-actions" hidden>
+          <button type="button" id="btn-edit-note" class="btn-ghost btn-sm">Edit</button>
+          <button type="button" id="btn-delete-note" class="btn-ghost btn-sm btn-danger">Delete</button>
+        </span>
+      </div>
+      <div id="note-panel" class="tab-panel">
+        <div id="note-content" class="note-content">
+          <p class="loading">Open a note from the list, or start with <em>00 - Index</em> if available.</p>
+        </div>
+      </div>
+      <div id="graph-panel" class="tab-panel" hidden>
+        <div class="graph-controls">
+          <label class="graph-scope-label">
+            <span data-i18n="graphTab">Γράφος</span>
+            <select id="graph-scope">
+              <option value="overview" data-i18n="graphOverview">Επισκόπηση (γρήγορο)</option>
+              <option value="theme" data-i18n="graphTheme">Θεματική τώρα</option>
+              <option value="subtopic" data-i18n="graphSubtopic">Υποθέμα τώρα</option>
+              <option value="full" data-i18n="graphFull">Πλήρης (βαρύ)</option>
+            </select>
+          </label>
+          <div id="graph-stats" class="graph-stats"></div>
+        </div>
+        <div class="graph-toolbar">
+          <button type="button" id="graph-zoom-in" title="Zoom in">＋</button>
+          <button type="button" id="graph-zoom-out" title="Zoom out">－</button>
+          <button type="button" id="graph-fit" title="Fit to view">Fit</button>
+          <button type="button" id="graph-physics" title="Toggle physics">Unfreeze layout</button>
+        </div>
+        <div id="graph-canvas" class="graph-canvas"></div>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <div id="vault-edit-modal" class="modal-overlay" hidden>
+    <form id="vault-edit-form" class="modal-card">
+      <h3>Edit vault</h3>
+      <label>Name<input type="text" id="edit-vault-name" class="ingest-full" maxlength="80" required /></label>
+      <label>Description<textarea id="edit-vault-description" class="ingest-full" rows="3" maxlength="600"></textarea></label>
+      <label>Themes <span class="hint">(comma-separated)</span>
+        <input type="text" id="edit-vault-themes" class="ingest-full" />
+      </label>
+      <div class="modal-actions">
+        <button type="button" id="edit-cancel" class="btn-ghost">Cancel</button>
+        <button type="submit" class="ingest-submit-btn">Save</button>
+      </div>
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+  <script src="/static/i18n.js"></script>
+  <script src="/static/progress.js"></script>
+  <script src="/static/vault-edit.js"></script>
+  <script src="/static/graph.js"></script>
+  <script src="/static/explorer.js"></script>
+</body>
+</html>

@@ -1,50 +1,109 @@
 #!/usr/bin/env bash
 #
 # YouTube → AI → NotebookLM → Obsidian: full setup + pipeline runner.
-# Usage:
-#   ./run_pipeline.sh                    # run full pipeline (playlist from .env)
-#   ./run_pipeline.sh "https://youtube.com/playlist?list=XXX"   # set playlist and run
-#   ./run_pipeline.sh --resume           # run with --resume (skip existing files)
-#   ./run_pipeline.sh --skip-notebooklm # run without NotebookLM step
-#   ./run_pipeline.sh --setup-only       # only install deps and check env
+#
+# 1) Set the parameters below (or pass them on the command line).
+# 2) Run: ./run_pipeline.sh
 #
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# --- Parse args ---
-PLAYLIST_URL_ARG=""
-RESUME=""
-SKIP_NOTEBOOKLM=""
-SETUP_ONLY=""
+# =============================================================================
+# CONFIGURATION — edit these, or override with command-line arguments
+# =============================================================================
+
+# Experiment/run name: all output for this run goes under data/NAME/
+#   data/NAME/transcripts/  data/NAME/enriched/  data/NAME/notebooklm_outputs/
+#   data/NAME/vault/  ← Obsidian notes (open this folder as vault in Obsidian)
+#   data/NAME/manifest.json  data/NAME/run_report.md
+# Use a short slug, e.g. metabolomic-medicine, greek-playlist (no spaces).
+EXPERIMENT_NAME="metabolomic-medicine"
+
+# YouTube playlist or channel URL (leave empty to use PLAYLIST_URL from .env)
+# Examples:
+#   URL="https://www.youtube.com/@MetabolomicMedicine"
+#   URL="https://www.youtube.com/playlist?list=PLxxxx"
+URL=""
+LIMIT="200"              # Max number of videos to process (leave empty for no limit)
+SOURCE="auto"           # How to treat URL: auto (detect) | channel | playlist
+RESUME="false"          # Skip videos that already have transcripts/enriched output
+UPDATE_MODE="false"     # Incremental update mode: implies resume + add only missing NotebookLM sources
+SKIP_NOTEBOOKLM="false" # Run without NotebookLM step (transcripts → enrichment → obsidian only)
+SETUP_ONLY="false"      # Only install dependencies and check .env; do not run the pipeline
+
+# =============================================================================
+# (Optional) Run only one step: transcripts | enrichment | notebooklm | obsidian
+# Leave empty to run the full pipeline.
+# ONLY_STEP=""
+ONLY_STEP=""
+
+# =============================================================================
+# End of configuration
+# =============================================================================
+
+# --- Parse command-line overrides ---
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --name|-m)
+      EXPERIMENT_NAME="$2"
+      shift 2
+      ;;
+    --url|-u)
+      URL="$2"
+      shift 2
+      ;;
+    --limit|-n)
+      LIMIT="$2"
+      shift 2
+      ;;
+    --source)
+      SOURCE="$2"
+      shift 2
+      ;;
     --resume)
-      RESUME="--resume"
+      RESUME="true"
+      shift
+      ;;
+    --update)
+      UPDATE_MODE="true"
+      RESUME="true"
       shift
       ;;
     --skip-notebooklm)
-      SKIP_NOTEBOOKLM=1
+      SKIP_NOTEBOOKLM="true"
       shift
       ;;
     --setup-only)
-      SETUP_ONLY=1
+      SETUP_ONLY="true"
       shift
       ;;
+    --only)
+      ONLY_STEP="$2"
+      shift 2
+      ;;
     --help|-h)
-      echo "Usage: $0 [PLAYLIST_URL] [--resume] [--skip-notebooklm] [--setup-only]"
+      echo "Usage: $0 [OPTIONS]"
       echo ""
-      echo "  PLAYLIST_URL    Optional. YouTube playlist URL (with list=...). If omitted, uses .env"
-      echo "  --resume        Skip videos that already have transcripts/enriched output"
-      echo "  --skip-notebooklm  Run transcripts → enrichment → obsidian only (no NotebookLM)"
-      echo "  --setup-only    Only install dependencies and check .env; do not run pipeline"
+      echo "Options override the configuration block at the top of this script:"
+      echo "  --name, -m NAME   Experiment name (data/NAME/ for this run; enables multiple experiments)"
+      echo "  --url, -u URL     Playlist or channel URL"
+      echo "  --limit, -n N      Max number of videos"
+      echo "  --source TYPE      auto | channel | playlist"
+      echo "  --resume           Skip already-processed videos"
+      echo "  --update           Incremental update mode (implies --resume)"
+      echo "  --skip-notebooklm  Omit NotebookLM step"
+      echo "  --setup-only       Only install deps and check .env"
+      echo "  --only STEP        Run only: transcripts | enrichment | notebooklm | obsidian"
+      echo ""
+      echo "You can also edit the CONFIGURATION section at the top of $0"
       exit 0
       ;;
     *)
-      if [[ "$1" == https* ]] && [[ "$1" == *list=* ]]; then
-        PLAYLIST_URL_ARG="$1"
+      if [[ "$1" == https* ]]; then
+        URL="$1"
       else
-        echo "Unrecognized option or invalid playlist URL: $1" >&2
+        echo "Unrecognized option: $1" >&2
         exit 1
       fi
       shift
@@ -52,10 +111,23 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# --- Build pipeline arguments from config ---
+BASE_ARGS=()
+[[ -n "$EXPERIMENT_NAME" ]] && BASE_ARGS+=(--name "$EXPERIMENT_NAME")
+[[ -n "$URL" ]] && BASE_ARGS+=(--url "$URL")
+[[ -n "$LIMIT" ]] && BASE_ARGS+=(--limit "$LIMIT")
+[[ -n "$SOURCE" ]] && BASE_ARGS+=(--source "$SOURCE")
+RESUME_ARGS=()
+[[ "$RESUME" == "true" ]] && RESUME_ARGS+=(--resume)
+[[ "$UPDATE_MODE" == "true" ]] && RESUME_ARGS+=(--update)
+
+PIPELINE_ARGS=("${BASE_ARGS[@]}" "${RESUME_ARGS[@]}")
+[[ -n "$ONLY_STEP" ]] && PIPELINE_ARGS+=(--only "$ONLY_STEP")
+
 # --- Setup: .env ---
 if [[ ! -f .env ]]; then
   if [[ -f .env.example ]]; then
-    echo "[setup] No .env found; copying from .env.example. Edit .env and add your API key and playlist."
+    echo "[setup] No .env found; copying from .env.example. Edit .env and add your API key."
     cp .env.example .env
   else
     echo "[error] No .env or .env.example found." >&2
@@ -63,75 +135,129 @@ if [[ ! -f .env ]]; then
   fi
 fi
 
-# --- Update .env with playlist URL if provided ---
-if [[ -n "$PLAYLIST_URL_ARG" ]]; then
+# --- Update .env with URL if set in config ---
+if [[ -n "$URL" ]]; then
   if grep -q '^PLAYLIST_URL=' .env 2>/dev/null; then
     if [[ "$(uname)" == "Darwin" ]]; then
-      sed -i '' "s|^PLAYLIST_URL=.*|PLAYLIST_URL=${PLAYLIST_URL_ARG}|" .env
+      sed -i '' "s|^PLAYLIST_URL=.*|PLAYLIST_URL=${URL}|" .env
     else
-      sed -i "s|^PLAYLIST_URL=.*|PLAYLIST_URL=${PLAYLIST_URL_ARG}|" .env
+      sed -i "s|^PLAYLIST_URL=.*|PLAYLIST_URL=${URL}|" .env
     fi
     echo "[setup] Updated .env PLAYLIST_URL"
   else
-    echo "PLAYLIST_URL=$PLAYLIST_URL_ARG" >> .env
+    echo "PLAYLIST_URL=$URL" >> .env
     echo "[setup] Appended PLAYLIST_URL to .env"
   fi
 fi
 
-# --- Ensure playlist is set ---
+# --- Ensure URL is set ---
 PLAYLIST_IN_ENV=$(grep -E '^PLAYLIST_URL=' .env 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" || true)
-if [[ -z "$PLAYLIST_URL_ARG" ]] && [[ -z "$PLAYLIST_IN_ENV" ]]; then
-  echo "[error] PLAYLIST_URL is not set in .env. Add it or run: $0 'https://youtube.com/watch?v=...&list=PLxxxx'" >&2
+if [[ -z "$URL" ]] && [[ -z "$PLAYLIST_IN_ENV" ]]; then
+  echo "[error] No URL. Set URL in the CONFIGURATION block at the top of $0 or PLAYLIST_URL in .env" >&2
   exit 1
 fi
 
-# --- Setup: Python ---
-if ! command -v python3 &>/dev/null && ! command -v python &>/dev/null; then
-  echo "[error] Python not found. Install Python 3.10+." >&2
+# --- Setup: use your existing venv (YT_VENV, venv_youtube_lm in project, or activated VIRTUAL_ENV) ---
+# Script runs in a subshell and often does not see your interactive shell's PATH, so we need an explicit venv path.
+if [[ -n "$YT_VENV" ]] && [[ -x "$YT_VENV/bin/python" ]]; then
+  PYTHON="$YT_VENV/bin/python"
+  echo "[setup] Using YT_VENV: $PYTHON $($PYTHON --version 2>&1)"
+elif [[ -x "$SCRIPT_DIR/venv_youtube_lm/bin/python" ]]; then
+  PYTHON="$SCRIPT_DIR/venv_youtube_lm/bin/python"
+  echo "[setup] Using venv_youtube_lm: $PYTHON $($PYTHON --version 2>&1)"
+elif [[ -n "$VIRTUAL_ENV" ]] && [[ -x "$VIRTUAL_ENV/bin/python" ]]; then
+  PYTHON="$VIRTUAL_ENV/bin/python"
+  echo "[setup] Using VIRTUAL_ENV: $PYTHON $($PYTHON --version 2>&1)"
+else
+  echo "[error] This script must use a virtual environment (to avoid 'externally-managed-environment' errors)." >&2
+  echo "" >&2
+  echo "Do one of the following:" >&2
+  echo "  1. Put your venv in this project:  $SCRIPT_DIR/venv_youtube_lm/" >&2
+  echo "  2. Or set and export your venv path:" >&2
+  echo "     export YT_VENV=\$(dirname \$(dirname \$(which python)))" >&2
+  echo "     ./run_pipeline.sh" >&2
+  echo "     (Run the 'export' line in the same terminal where you activated venv_youtube_lm.)" >&2
   exit 1
 fi
-PYTHON=$(command -v python3 2>/dev/null || command -v python)
-echo "[setup] Using: $PYTHON $($PYTHON --version 2>&1)"
 
-# --- Setup: install dependencies ---
+# --- Setup: install dependencies (inside venv) ---
 echo "[setup] Installing Python dependencies..."
 "$PYTHON" -m pip install -q -r requirements.txt
 echo "[setup] Installing Playwright browser (chromium)..."
 "$PYTHON" -m playwright install chromium 2>/dev/null || true
 
-# --- Check API key (don't source whole .env to avoid side effects) ---
+# --- Check API key ---
 if ! grep -qE '^OPENAI_API_KEY=.' .env 2>/dev/null && ! grep -qE '^GEMINI_API_KEY=.' .env 2>/dev/null; then
   echo "[warn] Neither OPENAI_API_KEY nor GEMINI_API_KEY set in .env. Enrichment will fail until you add one."
 fi
 grep -E '^OPENAI_API_KEY=' .env 2>/dev/null | grep -q 'your_openai_key' && \
   echo "[warn] OPENAI_API_KEY looks like a placeholder. Replace it in .env for enrichment."
 
-if [[ -n "$SETUP_ONLY" ]]; then
+if [[ "$SETUP_ONLY" == "true" ]]; then
   echo "[setup] Setup complete. Run without --setup-only to run the pipeline."
   exit 0
 fi
 
 # --- Run pipeline ---
 echo ""
-echo "========== Pipeline: PLAYLIST from .env =========="
+echo "========== Pipeline =========="
+echo "  Experiment: ${EXPERIMENT_NAME:-<default>}"
+echo "  URL:    ${URL:-$PLAYLIST_IN_ENV}"
+echo "  Limit:  ${LIMIT:-all}"
+echo "  Source: $SOURCE"
+echo "  Resume: $RESUME"
+echo "  Update: $UPDATE_MODE"
+echo "=============================="
 echo ""
 
-if [[ -n "$SKIP_NOTEBOOKLM" ]]; then
+if [[ "$SKIP_NOTEBOOKLM" == "true" ]]; then
   echo "[1/3] Transcripts..."
-  "$PYTHON" pipeline.py --only transcripts $RESUME
+  "$PYTHON" pipeline.py --only transcripts "${BASE_ARGS[@]}" "${RESUME_ARGS[@]}"
   echo "[2/3] Enrichment..."
-  "$PYTHON" pipeline.py --only enrichment $RESUME
+  "$PYTHON" pipeline.py --only enrichment "${RESUME_ARGS[@]}"
   echo "[3/3] Obsidian..."
-  "$PYTHON" pipeline.py --only obsidian
+  "$PYTHON" pipeline.py --only obsidian "${BASE_ARGS[@]}"
   echo ""
   echo "Done (transcripts → enrichment → obsidian). NotebookLM skipped."
 else
-  echo "[full] Running full pipeline (transcripts → enrichment → notebooklm → obsidian)..."
-  "$PYTHON" pipeline.py $RESUME
+  if [[ -n "$ONLY_STEP" ]]; then
+    echo "[only] Running step: $ONLY_STEP"
+    "$PYTHON" pipeline.py "${PIPELINE_ARGS[@]}"
+  else
+    echo "[full] Running full pipeline (transcripts → enrichment → notebooklm → obsidian)..."
+    "$PYTHON" pipeline.py "${PIPELINE_ARGS[@]}"
+  fi
   echo ""
   echo "Done."
 fi
 
 echo ""
-echo "Output: data/transcripts, data/enriched, data/notebooklm_outputs (if ran NotebookLM), and your Obsidian vault or data/obsidian_export/"
-echo "Report: data/run_report.md"
+echo "=============================================="
+echo "  OUTPUT (everything for this run)"
+echo "=============================================="
+if [[ -n "$EXPERIMENT_NAME" ]]; then
+  ROOT="data/$EXPERIMENT_NAME"
+  echo "  $ROOT/"
+  echo "  ├── transcripts/       (raw transcript JSON per video)"
+  echo "  ├── enriched/        (LLM-enriched JSON per video)"
+  echo "  ├── notebooklm_outputs/  (podcast, mindmap, quiz, flashcards)"
+  echo "  ├── vault/           ← Obsidian notes (open this folder in Obsidian)"
+  echo "  │   ├── 00 - Index.md"
+  echo "  │   ├── 01 - ... .md"
+  echo "  │   └── notebooklm/"
+  echo "  ├── manifest.json"
+  echo "  └── run_report.md"
+  echo ""
+  echo "  Open in Obsidian:  File → Open folder as vault  →  $SCRIPT_DIR/$ROOT/vault"
+else
+  echo "  data/"
+  echo "  ├── transcripts/"
+  echo "  ├── enriched/"
+  echo "  ├── notebooklm_outputs/"
+  echo "  ├── vault/           ← Obsidian notes"
+  echo "  ├── manifest.json"
+  echo "  └── run_report.md"
+  echo ""
+  echo "  Open in Obsidian:  File → Open folder as vault  →  $SCRIPT_DIR/data/vault"
+fi
+echo "=============================================="

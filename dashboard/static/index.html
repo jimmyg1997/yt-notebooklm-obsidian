@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vault Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <div class="subtitle">yt-notebooklm-obsidian</div>
+      <h1>Vault Dashboard</h1>
+    </div>
+    <label class="lang-switch">
+      <span class="lang-switch-label" data-i18n="langLabel">Γλώσσα</span>
+      <select id="ui-lang" aria-label="Language">
+        <option value="el">Ελληνικά</option>
+        <option value="en">English</option>
+      </select>
+    </label>
+  </header>
+  <main>
+    <section class="ingest-panel" id="ingest-panel">
+      <h2>Add one YouTube video</h2>
+      <p class="ingest-hint">Transcript → enrichment → screenshots → vault note. Pick an existing vault or create a new one.</p>
+      <form id="ingest-form" class="ingest-form-stack">
+        <input type="url" id="ingest-url" class="ingest-full" placeholder="https://www.youtube.com/watch?v=…" required />
+
+        <fieldset class="vault-mode-fieldset">
+          <legend>Vault target</legend>
+          <label class="mode-option">
+            <input type="radio" name="vault-mode" value="existing" checked />
+            <span>Existing vault</span>
+          </label>
+          <label class="mode-option">
+            <input type="radio" name="vault-mode" value="manual" />
+            <span>New vault — I'll name it</span>
+          </label>
+          <label class="mode-option">
+            <input type="radio" name="vault-mode" value="auto" />
+            <span>New vault — auto from first video (name, description & themes)</span>
+          </label>
+        </fieldset>
+
+        <div id="panel-existing" class="vault-mode-panel">
+          <select id="ingest-vault" class="ingest-full">
+            <option value="">Select vault…</option>
+          </select>
+        </div>
+
+        <div id="panel-manual" class="vault-mode-panel" hidden>
+          <input type="text" id="vault-name" class="ingest-full" placeholder="Vault name (e.g. Greek Health Podcast)" maxlength="80" />
+          <textarea id="vault-description" class="ingest-full" rows="3" placeholder="Short description — what this vault is for (optional)"></textarea>
+        </div>
+
+        <div id="panel-auto" class="vault-mode-panel" hidden>
+          <p class="mode-hint">After the first video is enriched, the dashboard will suggest a vault name, description, and starter theme notes from the content.</p>
+        </div>
+
+        <button type="submit" id="ingest-submit" class="ingest-submit-btn">Ingest video</button>
+      </form>
+      <div id="ingest-status" class="ingest-status progress-panel" hidden></div>
+    </section>
+
+    <h2 class="section-title">Your vaults</h2>
+    <div id="loading" class="loading progress-panel"></div>
+    <div id="vault-grid" class="vault-grid" hidden></div>
+    <div id="empty" class="empty-state" hidden>
+      <p>No vaults yet. Ingest a video with <strong>New vault — auto</strong> to create your first one.</p>
+    </div>
+  </main>
+
+  <div id="vault-edit-modal" class="modal-overlay" hidden>
+    <form id="vault-edit-form" class="modal-card">
+      <h3>Edit vault</h3>
+      <input type="hidden" id="edit-vault-id" />
+      <label>Name<input type="text" id="edit-vault-name" class="ingest-full" maxlength="80" required /></label>
+      <label>Description<textarea id="edit-vault-description" class="ingest-full" rows="3" maxlength="600"></textarea></label>
+      <label>Themes <span class="hint">(comma-separated topic labels)</span>
+        <input type="text" id="edit-vault-themes" class="ingest-full" placeholder="health, nutrition, learning" />
+      </label>
+      <div class="modal-actions">
+        <button type="button" id="edit-cancel" class="btn-ghost">Cancel</button>
+        <button type="submit" class="ingest-submit-btn">Save</button>
+      </div>
+      <p id="edit-status" class="edit-status" hidden></p>
+    </form>
+  </div>
+
+  <div id="delete-confirm-modal" class="modal-overlay" hidden>
+    <div class="modal-card delete-modal">
+      <h3>Delete vault?</h3>
+      <p id="delete-confirm-message" class="delete-confirm-message"></p>
+      <ul class="delete-confirm-list">
+        <li>All episode notes and topic pages</li>
+        <li>Transcripts and enrichments</li>
+        <li>Vault settings and index files</li>
+      </ul>
+      <p class="hint delete-warning">This cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" id="delete-cancel" class="btn-ghost">Cancel</button>
+        <button type="button" id="delete-confirm" class="btn-danger-solid">Yes, delete vault</button>
+      </div>
+    </div>
+  </div>
+
+    <div id="toast" class="toast" hidden></div>
+
+  <script src="/static/i18n.js"></script>
+  <script src="/static/progress.js"></script>
+  <script src="/static/vault-edit.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

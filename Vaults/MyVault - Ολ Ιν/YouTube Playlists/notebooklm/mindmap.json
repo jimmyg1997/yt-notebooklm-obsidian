@@ -1,0 +1,153 @@
+{
+  "name": "Cardiovascular Risk Reduction",
+  "children": [
+    {
+      "name": "Key Factors for Reduction",
+      "children": [
+        {
+          "name": "Physical Activity",
+          "children": [
+            {
+              "name": "Walking 7-8k steps daily"
+            },
+            {
+              "name": "30 mins 5 times/week"
+            },
+            {
+              "name": "Intense exercise 2 times/week"
+            },
+            {
+              "name": "Sun exposure during exercise"
+            }
+          ]
+        },
+        {
+          "name": "Nutritional Changes",
+          "children": [
+            {
+              "name": "Avoid processed foods"
+            },
+            {
+              "name": "Reduce sugar and starch"
+            },
+            {
+              "name": "Limit industrial seed oils"
+            },
+            {
+              "name": "Consume high-nutrient whole foods"
+            }
+          ]
+        },
+        {
+          "name": "Smoking Cessation",
+          "children": [
+            {
+              "name": "Primary cause of heart disease"
+            },
+            {
+              "name": "Increases lung cancer risk 30x"
+            },
+            {
+              "name": "Long-term cumulative damage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Primary Risk Indicators",
+      "children": [
+        {
+          "name": "Metabolic Health",
+          "children": [
+            {
+              "name": "Insulin resistance (540% risk)"
+            },
+            {
+              "name": "Diabetes (970% risk)"
+            },
+            {
+              "name": "High glucose levels"
+            },
+            {
+              "name": "Triglyceride/HDL ratio"
+            }
+          ]
+        },
+        {
+          "name": "Cholesterol Quality",
+          "children": [
+            {
+              "name": "ApoB protein importance"
+            },
+            {
+              "name": "Small dense LDL (High risk)"
+            },
+            {
+              "name": "Large buoyant LDL (Low risk)"
+            },
+            {
+              "name": "Calcium scoring for plaque"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Essential Nutrients",
+      "children": [
+        {
+          "name": "Vitamins & Minerals",
+          "children": [
+            {
+              "name": "Vitamin D (Immune regulation)"
+            },
+            {
+              "name": "Magnesium (600+ reactions)"
+            },
+            {
+              "name": "Vitamin K2 and Zinc"
+            },
+            {
+              "name": "B-complex and Selenium"
+            }
+          ]
+        },
+        {
+          "name": "Healthy Fats",
+          "children": [
+            {
+              "name": "Saturated fats (Stable)"
+            },
+            {
+              "name": "Monounsaturated (Olive oil)"
+            },
+            {
+              "name": "Omega-3 (Anti-inflammatory)"
+            },
+            {
+              "name": "MCT oil (Quick energy)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lifestyle Pillars",
+      "children": [
+        {
+          "name": "Adequate hydration"
+        },
+        {
+          "name": "7-8 hours quality sleep"
+        },
+        {
+          "name": "Social connections"
+        },
+        {
+          "name": "Sunlight for mitochondria"
+        }
+      ]
+    }
+  ]
+}
