@@ -411,7 +411,7 @@ Requires `ffmpeg` on your PATH and an OpenAI or Gemini API key in `.env`.
 
 **Vault editing:** Click ✎ on a vault card or **Edit vault** in explorer — change name, description, themes.
 
-**Graph view:** In explorer, open the **Graph** tab. Scopes: **overview** (fast, theme-level), **theme**, **subtopic**, or **full**. Click nodes to open notes.
+**Graph view:** In explorer, open the **Graph** tab. Default **Auto** mode shows a hierarchical overview for index notes, or a **focused ego graph** (selected note centered) for videos/topics. Scopes: **overview**, **index map**, **focus**, **full**.
 
 **Topics:** Hierarchy is **theme → cluster → subtopic** under `Topics/`. Each theme note lists **Mentioned in** episodes and **Related topics**. Use **Sync topics** in explorer to regenerate topic notes for existing vaults.
 

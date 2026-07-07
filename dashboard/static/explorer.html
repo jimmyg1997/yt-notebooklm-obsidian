@@ -65,10 +65,11 @@
           <label class="graph-scope-label">
             <span data-i18n="graphTab">Γράφος</span>
             <select id="graph-scope">
-              <option value="overview" data-i18n="graphOverview">Επισκόπηση (γρήγορο)</option>
-              <option value="theme" data-i18n="graphTheme">Θεματική τώρα</option>
-              <option value="subtopic" data-i18n="graphSubtopic">Υποθέμα τώρα</option>
-              <option value="full" data-i18n="graphFull">Πλήρης (βαρύ)</option>
+              <option value="auto" data-i18n="graphAuto" selected>Auto (current note)</option>
+              <option value="overview" data-i18n="graphOverview">Vault overview</option>
+              <option value="index" data-i18n="graphIndex">Index map (themes only)</option>
+              <option value="focus" data-i18n="graphFocus">Focus on selection</option>
+              <option value="full" data-i18n="graphFull">Full vault (heavy)</option>
             </select>
           </label>
           <div id="graph-stats" class="graph-stats"></div>
@@ -102,7 +103,7 @@
   <script src="/static/i18n.js"></script>
   <script src="/static/progress.js"></script>
   <script src="/static/vault-edit.js"></script>
-  <script src="/static/graph.js?v=4"></script>
-  <script src="/static/explorer.js?v=4"></script>
+  <script src="/static/graph.js?v=5"></script>
+  <script src="/static/explorer.js?v=5"></script>
 </body>
 </html>

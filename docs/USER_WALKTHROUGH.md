@@ -139,22 +139,35 @@ Start with **`00 - Index.md`** or **`00 - Topic Index.md`** when you open a vaul
 
 Click the **Graph** tab in the right pane.
 
+**Default mode is Auto** — the graph follows what you selected:
+
+| You selected | Graph shows |
+|--------------|-------------|
+| **Index note** (`00 - Index`) | **Vault overview** — hierarchical tree: index → themes → videos (no subtopic hairball) |
+| **A video or topic note** | **Focus view** — that note in the **center**, connected neighbours around it |
+| **A folder** in Topics | Focus on the **theme** for that folder |
+
 ![Graph — overview scope](screenshots/03-explorer-graph.png)
 
 ### Scope dropdown
 
 | Scope | Best for |
 |-------|----------|
-| **Overview (fast)** | Whole vault at theme level — good default |
-| **Current theme** | Focus on the theme folder you selected in the tree |
-| **Current subtopic** | One subtopic note and its neighbours |
-| **Full (heavy)** | All notes and links — slow on large vaults |
+| **Auto (current note)** | Recommended — overview for index, focus for everything else |
+| **Vault overview** | Big picture: index + themes + videos in a **top-down tree** (labels hidden on video dots when crowded) |
+| **Index map (themes only)** | Just index and theme nodes — lightest map |
+| **Focus on selection** | Force ego graph around the open note |
+| **Full vault (heavy)** | Every subtopic and link — use sparingly on large vaults |
 
 ![Graph — theme scope](screenshots/04-graph-theme-scope.png)
 
 ![Graph — full scope (all notes)](screenshots/13-graph-full-scope.png)
 
-### Graph controls
+### Layout tips
+
+- **Overview / Index** use a **hierarchical layout** (index at top, themes middle, videos as small dots below) — not a tangled circle.
+- **Focus** puts the **selected note in the center** (gold ring) and zooms in; hover any dot for its full title.
+- Use **Fit** to re-center on the focused note.
 
 - **＋ / －** — zoom in and out  
 - **Fit** — fit the whole graph in view  

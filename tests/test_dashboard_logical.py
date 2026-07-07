@@ -38,15 +38,28 @@ def test_resolve_topics_path_wikilink(vault_id):
     assert res["found"], f"Should resolve path-style link: {stem}"
 
 
-def test_graph_has_nodes_and_edges(vault_id):
+def test_graph_focus_scope_centers_on_note(vault_id):
     from dashboard.services.vault_reader import VaultReader
 
-    g = VaultReader(vault_id).build_graph()
-    assert g["stats"]["nodes"] >= 1
-    assert "nodes" in g and "edges" in g
-    # After sync, video note should link to index or topics
-    if g["stats"]["edges"] == 0:
-        pytest.skip("No wikilink edges yet — run sync-topics first")
+    reader = VaultReader(vault_id)
+    notes = reader.list_all_notes_flat()
+    video = next((n for n in notes if n["path"].startswith("0") and "Topics" not in n["path"]), None)
+    if not video:
+        pytest.skip("No episode note in sample vault")
+    g = reader.build_graph(scope="focus", focus=video["path"])
+    assert g["center_id"] == video["path"]
+    assert g["layout"] == "focus"
+    assert 1 <= len(g["nodes"]) <= 72
+    assert video["path"] in {n["id"] for n in g["nodes"]}
+
+
+def test_overview_uses_hierarchical_layout(vault_id):
+    from dashboard.services.vault_reader import VaultReader
+
+    g = VaultReader(vault_id).build_graph(scope="overview")
+    assert g["layout"] == "hierarchical"
+    groups = {n["group"] for n in g["nodes"]}
+    assert "subtopic" not in groups
 
 
 def test_update_vault_metadata_roundtrip(vault_id, vault_path):

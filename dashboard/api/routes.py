@@ -159,7 +159,7 @@ def sync_vault_topics(vault_id: str) -> dict:
 @router.get("/vaults/{vault_id}/graph")
 def get_graph(
     vault_id: str,
-    scope: str = Query("overview", description="overview | theme | subtopic | full"),
+    scope: str = Query("overview", description="auto | overview | index | focus | theme | subtopic | full"),
     focus: str = Query("", description="Theme folder or note path for scoped graph"),
 ) -> dict:
     """Local graph of wikilink connections (Obsidian-style)."""

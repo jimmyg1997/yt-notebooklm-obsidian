@@ -342,7 +342,7 @@ class VaultReader:
         return {"found": True, "path": rel, "title": title}
 
     def build_graph(self, scope: str = "overview", focus: str = "") -> dict:
-        """Obsidian-style graph. scope: overview | theme | subtopic | full."""
+        """Obsidian-style graph. scope: auto | overview | index | focus | theme | subtopic | full."""
         self._build_index()
         scope = (scope or "overview").lower()
         focus = focus.strip().lstrip("/")
@@ -358,6 +358,7 @@ class VaultReader:
             note_types[note.path] = _classify_note(note.path, text)
 
         theme_paths: dict[str, str] = {}
+        theme_for_note: dict[str, str] = {}
         for note in self._all_notes:
             if note.path.startswith("Topics/") and note.path.count("/") == 1:
                 theme_paths[self._norm(note.title)] = note.path
@@ -366,17 +367,58 @@ class VaultReader:
                 theme_paths[self._norm(slug)] = note.path
                 if meta.get("theme"):
                     theme_paths[self._norm(str(meta["theme"]))] = note.path
+            text = note_texts.get(note.path, "")
+            meta = _parse_frontmatter(text)
+            parent = meta.get("parent") or meta.get("theme")
+            if isinstance(parent, str) and parent.strip():
+                tp = theme_paths.get(self._norm(parent.strip()))
+                if tp:
+                    theme_for_note[note.path] = tp
+            elif note.path.startswith("Topics/"):
+                parts = note.path.split("/")
+                if len(parts) >= 2:
+                    theme_for_note[note.path] = f"Topics/{parts[1]}.md"
 
+        def theme_for_path(path: str) -> str | None:
+            if path in theme_for_note:
+                return theme_for_note[path]
+            if path.startswith("Topics/"):
+                parts = path.replace(".md", "").split("/")
+                if len(parts) >= 2:
+                    cand = f"Topics/{parts[1]}.md"
+                    if any(n.path == cand for n in self._all_notes):
+                        return cand
+            return None
+
+        center_id = ""
         allowed: set[str] | None = None
-        if scope == "overview":
-            allowed = {
-                n.path for n in self._all_notes
-                if note_types[n.path] in ("meta", "theme", "video")
-            }
+        if scope in ("auto", "overview", "index"):
+            if scope == "index":
+                allowed = {
+                    n.path for n in self._all_notes
+                    if note_types[n.path] in ("meta", "theme")
+                }
+            else:
+                allowed = {
+                    n.path for n in self._all_notes
+                    if note_types[n.path] in ("meta", "theme", "video")
+                }
+        elif scope == "focus" and focus:
+            center_id = focus if focus.endswith(".md") else f"{focus}.md"
+            if not any(n.path == center_id for n in self._all_notes):
+                resolved = self.resolve_wikilink(focus.replace(".md", ""))
+                if resolved.get("found") and resolved.get("path"):
+                    center_id = resolved["path"]
+            allowed = self._ego_neighborhood(
+                center_id, note_texts, note_types, theme_for_note, max_nodes=72, hops=1,
+            )
+            if center_id not in allowed and any(n.path == center_id for n in self._all_notes):
+                allowed.add(center_id)
         elif scope == "theme" and focus:
             focus_base = focus.replace(".md", "").strip("/")
             prefix = focus_base if focus_base.startswith("Topics/") else f"Topics/{focus_base}"
             theme_md = f"{prefix}.md" if not prefix.endswith(".md") else prefix
+            center_id = theme_md
             allowed = {
                 n.path for n in self._all_notes
                 if n.path == theme_md
@@ -384,20 +426,23 @@ class VaultReader:
                 or n.path.startswith(prefix + "/")
             }
         elif scope == "subtopic" and focus:
-            allowed = {focus if focus.endswith(".md") else focus + ".md"}
-            allowed = {p for p in allowed if any(n.path == p for n in self._all_notes)}
-            seed = next(iter(allowed), "")
-            if seed:
-                allowed = {seed}
-                for note in self._all_notes:
-                    text = note_texts.get(note.path, "")
-                    if seed.split("/")[-1].replace(".md", "") in text or note.path in text:
-                        allowed.add(note.path)
+            sub_path = focus if focus.endswith(".md") else f"{focus}.md"
+            if not any(n.path == sub_path for n in self._all_notes):
+                resolved = self.resolve_wikilink(focus.replace(".md", ""))
+                if resolved.get("found") and resolved.get("path"):
+                    sub_path = resolved["path"]
+            center_id = sub_path
+            allowed = self._ego_neighborhood(
+                sub_path, note_texts, note_types, theme_for_note, max_nodes=48, hops=1,
+            )
         elif scope == "full":
             allowed = {n.path for n in self._all_notes}
 
         if allowed is None:
-            allowed = {n.path for n in self._all_notes if note_types[n.path] in ("meta", "theme", "video")}
+            allowed = {
+                n.path for n in self._all_notes
+                if note_types[n.path] in ("meta", "theme", "video")
+            }
 
         if scope in ("theme", "full") and len(allowed) > 220:
             subtopics = sorted(p for p in allowed if note_types.get(p) in ("subtopic", "topic"))
@@ -412,10 +457,22 @@ class VaultReader:
                 for m in WIKILINK_RE.finditer(text):
                     resolved = self.resolve_wikilink(m.group(1).strip())
                     tgt = resolved.get("path") if resolved.get("found") else None
-                    if tgt and tgt in allowed:
+                    if not tgt:
+                        continue
+                    if tgt in allowed:
+                        linked_videos.add(note.path)
+                        break
+                    parent_theme = theme_for_path(tgt)
+                    if parent_theme and parent_theme in allowed:
                         linked_videos.add(note.path)
                         break
             allowed |= linked_videos
+
+        layout = "hierarchical" if scope in ("overview", "index") else "force"
+        if scope == "focus":
+            layout = "focus"
+        if scope == "full" and len(allowed) > 100:
+            layout = "force-lite"
 
         nodes: list[dict] = []
         edges: list[dict] = []
@@ -439,9 +496,9 @@ class VaultReader:
             if ntype == "meta":
                 group, level = "meta", 0
             elif ntype == "video":
-                group, level = "video", 1
+                group, level = "video", 2
             elif ntype == "theme":
-                group, level = "theme", 2
+                group, level = "theme", 1
             elif ntype in ("subtopic", "topic"):
                 group = "subtopic"
                 level = 4 if note.path.count("/") >= 3 else 3
@@ -452,6 +509,7 @@ class VaultReader:
                 "label": note.title,
                 "group": group,
                 "level": level,
+                "is_center": note.path == center_id if center_id else False,
             })
 
         for note in self._all_notes:
@@ -465,7 +523,7 @@ class VaultReader:
                 if parent_path and parent_path in allowed:
                     add_edge(note.path, parent_path, "hierarchy")
 
-            if scope == "overview":
+            if scope in ("overview", "index"):
                 continue
             for m in WIKILINK_RE.finditer(text):
                 target = m.group(1).strip()
@@ -476,22 +534,111 @@ class VaultReader:
                 if tgt in allowed:
                     add_edge(note.path, tgt, "wikilink")
 
-        if scope == "overview":
+        if scope in ("overview", "index"):
             for note in self._all_notes:
-                if note.path not in allowed or note_types[note.path] != "video":
+                if note.path not in allowed:
                     continue
                 text = note_texts.get(note.path, "")
+                ntype = note_types[note.path]
                 for m in WIKILINK_RE.finditer(text):
                     resolved = self.resolve_wikilink(m.group(1).strip())
                     tgt = resolved.get("path") if resolved.get("found") else None
-                    if tgt and tgt in allowed and note_types.get(tgt) == "theme":
+                    if not tgt:
+                        continue
+                    if ntype == "meta" and note_types.get(tgt) == "theme" and tgt in allowed:
                         add_edge(note.path, tgt, "wikilink")
+                    elif ntype == "video":
+                        if tgt in allowed and note_types.get(tgt) == "theme":
+                            add_edge(note.path, tgt, "wikilink")
+                        else:
+                            theme_path = theme_for_path(tgt)
+                            if theme_path and theme_path in allowed:
+                                add_edge(note.path, theme_path, "wikilink")
+                if ntype == "video" and note.path in allowed:
+                    tp = theme_for_path(note.path)
+                    if not tp and note.folder.startswith("Topics/"):
+                        tp = theme_for_path(note.folder + "/x.md")
+                    if tp and tp in allowed:
+                        add_edge(note.path, tp, "hierarchy")
 
         return {
             "nodes": nodes,
             "edges": edges,
+            "center_id": center_id,
+            "layout": layout,
             "stats": {"nodes": len(nodes), "edges": len(edges), "scope": scope, "focus": focus},
         }
+
+    def _ego_neighborhood(
+        self,
+        center: str,
+        note_texts: dict[str, str],
+        note_types: dict[str, str],
+        theme_for_note: dict[str, str],
+        *,
+        max_nodes: int = 72,
+        hops: int = 1,
+    ) -> set[str]:
+        """1-hop ego graph around center note (Obsidian local graph style)."""
+        if not center or not any(n.path == center for n in self._all_notes):
+            return set()
+        allowed: set[str] = {center}
+        note_paths = {n.path for n in self._all_notes}
+
+        def link_targets(path: str) -> set[str]:
+            out: set[str] = set()
+            text = note_texts.get(path, "")
+            for m in WIKILINK_RE.finditer(text):
+                resolved = self.resolve_wikilink(m.group(1).strip())
+                if resolved.get("found") and resolved.get("path"):
+                    out.add(resolved["path"])
+            meta = _parse_frontmatter(text)
+            parent = meta.get("parent") or meta.get("theme")
+            if isinstance(parent, str) and parent.strip():
+                resolved = self.resolve_wikilink(parent.strip())
+                if resolved.get("found") and resolved.get("path"):
+                    out.add(resolved["path"])
+            if path in theme_for_note:
+                out.add(theme_for_note[path])
+            stem = Path(path).stem
+            for other in self._all_notes:
+                if other.path == path:
+                    continue
+                ot = note_texts.get(other.path, "")
+                if f"[[{stem}]]" in ot or f"[[{path.replace('.md', '')}]]" in ot:
+                    out.add(other.path)
+            return out
+
+        frontier = {center}
+        for _ in range(hops):
+            nxt: set[str] = set()
+            for p in frontier:
+                for t in link_targets(p):
+                    if t in note_paths:
+                        nxt.add(t)
+            allowed |= nxt
+            frontier = nxt
+            if len(allowed) >= max_nodes:
+                break
+
+        if len(allowed) > max_nodes:
+            scored: list[tuple[int, str]] = []
+            for p in allowed:
+                if p == center:
+                    scored.append((9999, p))
+                    continue
+                score = len(link_targets(p) & allowed)
+                if center in link_targets(p):
+                    score += 5
+                scored.append((score, p))
+            scored.sort(reverse=True)
+            kept = {center}
+            for _, p in scored:
+                if len(kept) >= max_nodes:
+                    break
+                kept.add(p)
+            allowed = kept
+        return allowed
 
     def backlinks(self, rel_path: str) -> list[dict]:
         self._build_index()
