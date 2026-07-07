@@ -368,13 +368,29 @@ pip install -r requirements.txt   # includes fastapi + uvicorn
 
 ### Dashboard screenshots
 
-| Home — ingest & vault cards | Explorer — note view | Graph — link view |
-|-----------------------------|----------------------|-------------------|
-| ![Dashboard home](docs/screenshots/01-dashboard-home.png) | ![Explorer note](docs/screenshots/02-explorer-note.png) | ![Graph view](docs/screenshots/03-explorer-graph.png) |
+**Start here:** [`docs/USER_WALKTHROUGH.md`](docs/USER_WALKTHROUGH.md) — full visual tour with 18 annotated screenshots.
 
-Theme-scoped graph (select a `Topics/…` folder first):
+| Home — ingest + vault library | Vault cards (covers & themes) | Ingest — create new vault |
+|:---:|:---:|:---:|
+| ![Home](docs/screenshots/01-dashboard-home.png) | ![Cards](docs/screenshots/06-vault-cards.png) | ![Ingest](docs/screenshots/05-ingest-new-vault-form.png) |
 
-![Graph theme scope](docs/screenshots/04-graph-theme-scope.png)
+| Explorer — Topics tree | Index note | Video note + frame captures |
+|:---:|:---:|:---:|
+| ![Tree](docs/screenshots/08-explorer-topics-tree.png) | ![Index](docs/screenshots/09-explorer-index-note.png) | ![Video](docs/screenshots/11-explorer-video-note-frames.png) |
+
+| Graph overview | Graph — one theme | Graph — full vault |
+|:---:|:---:|:---:|
+| ![Graph](docs/screenshots/03-explorer-graph.png) | ![Theme graph](docs/screenshots/04-graph-theme-scope.png) | ![Full graph](docs/screenshots/13-graph-full-scope.png) |
+
+| Large playlist (Ολ Ιν) — index | Large playlist — graph |
+|:---:|:---:|
+| ![Ol In index](docs/screenshots/14-ol-in-index-note.png) | ![Ol In graph](docs/screenshots/15-ol-in-graph.png) |
+
+Regenerate screenshots anytime (dashboard must be running):
+
+```bash
+.venv/bin/python scripts/capture_dashboard_screenshots.py
+```
 
 **Discovers vaults from:**
 - `data/*/vault/` (pipeline experiments)

@@ -2,7 +2,7 @@
 
 This guide explains what lands in your vault and how to use it day to day.
 
-**Also see:** [Vault Dashboard walkthrough](USER_WALKTHROUGH.md) for the local web UI (browse, graph, single-video ingest).
+**Also see:** [Vault Dashboard walkthrough](USER_WALKTHROUGH.md) (web UI screenshots) · [Obsidian graph examples](../README.md#vault-dashboard-local-web-ui)
 
 ---
 

@@ -4,6 +4,25 @@ Step-by-step guide for using the **local Vault Dashboard** (`http://127.0.0.1:87
 
 ---
 
+## Visual tour (screenshots)
+
+| | |
+|---|---|
+| **Home** — ingest form + all vault cards | ![Home](screenshots/01-dashboard-home.png) |
+| **Vault cards** — cover, themes, stats | ![Vault cards](screenshots/06-vault-cards.png) |
+| **New vault form** — name & description before ingest | ![Ingest form](screenshots/05-ingest-new-vault-form.png) |
+| **Explorer** — folder tree + note list + reading a note | ![Explorer](screenshots/08-explorer-topics-tree.png) |
+| **Index note** — entry point for every vault | ![Index](screenshots/09-explorer-index-note.png) |
+| **Topic note** — theme MOC with linked episodes | ![Topic](screenshots/10-explorer-topic-note.png) |
+| **Video note** — summary + key frames from the video | ![Video note](screenshots/11-explorer-video-note-frames.png) |
+| **Graph (overview)** — themes, videos, links | ![Graph overview](screenshots/03-explorer-graph.png) |
+| **Graph (theme scope)** — zoom into one theme folder | ![Graph theme](screenshots/04-graph-theme-scope.png) |
+| **Graph (full)** — every note and wikilink | ![Graph full](screenshots/13-graph-full-scope.png) |
+| **Ολ Ιν vault** — 50+ episode business playlist | ![Ol In index](screenshots/14-ol-in-index-note.png) |
+| **Ολ Ιν graph** — large playlist link map | ![Ol In graph](screenshots/15-ol-in-graph.png) |
+
+---
+
 ## 1. Start the dashboard
 
 From the project folder:
@@ -43,7 +62,9 @@ The dashboard discovers vaults from:
 - `Vaults/*/` — local Obsidian vault roots you keep in the repo
 - `OBSIDIAN_VAULT_PATH` in `.env` — your main Obsidian vault (if configured)
 
-Each card shows the vault name, description, note count, and a cover thumbnail when available.
+Each card shows the vault name, description, note count, cover thumbnail, and theme chips.
+
+![Vault cards with covers and theme tags](screenshots/06-vault-cards.png)
 
 ---
 
@@ -56,9 +77,11 @@ Each card shows the vault name, description, note count, and a cover thumbnail w
    - **New vault — auto from first video** — name, description, and starter themes are suggested after enrichment.
 3. Click **Ingest video**.
 
+![Creating a new vault before ingest](screenshots/05-ingest-new-vault-form.png)
+
 Requirements:
 
-- `ffmpeg` on your PATH (for optional frame screenshots in notes).
+- `ffmpeg` on your PATH (for optional frame screenshots embedded in notes).
 - `OPENAI_API_KEY` or `GEMINI_API_KEY` in `.env` for transcript enrichment.
 
 Progress appears under the form. When finished, the new note appears in the vault and the card list refreshes.
@@ -67,7 +90,7 @@ Progress appears under the form. When finished, the new note appears in the vaul
 
 ## 4. Open a vault (Explorer)
 
-Click a vault card (anywhere except ✎ or Delete).
+Click a vault card (anywhere except **Edit** or **Delete**).
 
 The **Explorer** has three columns:
 
@@ -77,16 +100,22 @@ The **Explorer** has three columns:
 | **Notes** | Searchable list of Markdown notes in the current folder |
 | **Note / Graph** | Read or edit the selected note, or view the link graph |
 
-![Explorer — reading a note](screenshots/02-explorer-note.png)
+![Explorer — Topics folder tree and note list](screenshots/08-explorer-topics-tree.png)
 
 ### Reading notes
 
 - Click a note in the list to open it.
 - **Wikilinks** `[[like this]]` are clickable — unresolved links are highlighted.
-- Images in notes load from the vault assets folder.
+- Images in notes load from the vault assets folder (frames captured from the video).
 - **Backlinks** appear at the bottom when other notes link here.
 
 Start with **`00 - Index.md`** or **`00 - Topic Index.md`** when you open a vault for the first time.
+
+![Index note — links to every episode and artifact](screenshots/09-explorer-index-note.png)
+
+![Topic note — Mentioned in episodes + related topics](screenshots/10-explorer-topic-note.png)
+
+![Video note — summary, key ideas, and frame screenshots from the video](screenshots/11-explorer-video-note-frames.png)
 
 ### Editing notes
 
@@ -94,9 +123,14 @@ Start with **`00 - Index.md`** or **`00 - Topic Index.md`** when you open a vaul
 2. Click **Edit** → change Markdown in the editor → **Save**.
 3. **Delete** removes the note (with confirmation).
 
+![Note edit mode](screenshots/18-note-edit-mode.png)
+
 ### Vault metadata
 
-- **Edit vault** (header) — change name, description, comma-separated themes.
+- **Edit vault** (header or ✎ on home card) — change name, description, comma-separated themes.
+
+![Edit vault dialog](screenshots/07-edit-vault-modal.png)
+
 - **Sync topics** — rebuild topic notes under `Topics/` from episode wikilinks (useful after bulk imports).
 
 ---
@@ -118,6 +152,8 @@ Click the **Graph** tab in the right pane.
 
 ![Graph — theme scope](screenshots/04-graph-theme-scope.png)
 
+![Graph — full scope (all notes)](screenshots/13-graph-full-scope.png)
+
 ### Graph controls
 
 - **＋ / －** — zoom in and out  
@@ -128,6 +164,14 @@ Click the **Graph** tab in the right pane.
 
 Tip: select a folder under `Topics/YourTheme/` before switching to **Current theme** or **Current subtopic** scope.
 
+### Large playlist example (Ολ Ιν)
+
+A 50+ video Greek business podcast vault shows how the graph scales:
+
+![Ολ Ιν index](screenshots/14-ol-in-index-note.png)
+
+![Ολ Ιν graph — videos linked to themes](screenshots/15-ol-in-graph.png)
+
 ---
 
 ## 6. Language (Greek / English)
@@ -136,6 +180,8 @@ Use the **Γλώσσα / Language** dropdown in the header (home and explorer).
 
 - UI labels, buttons, and section headers in notes switch between Greek and English.
 - Episode body text stays in the language chosen at ingest time (`OUTPUT_LANGUAGE` in `.env`).
+
+![Explorer with English UI labels](screenshots/12-explorer-english-ui.png)
 
 ---
 
@@ -187,3 +233,5 @@ The dashboard graph and Obsidian’s graph are different: the dashboard graph is
 7. [ ] Optional: open the same folder in Obsidian
 
 For automated checks: `pytest tests/` (includes graph tab browser test when Playwright is installed).
+
+To regenerate screenshots: `.venv/bin/python scripts/capture_dashboard_screenshots.py` (dashboard must be running).
